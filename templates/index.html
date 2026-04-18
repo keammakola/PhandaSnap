@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hustle Engine</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #f0f0f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      background: linear-gradient(90deg, #ff6b00, #ff0080);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p { color: #888; margin-top: 0.4rem; font-size: 0.95rem; }
+
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 0.4rem; }
+
+    input, select {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #f0f0f0;
+      font-size: 0.95rem;
+      margin-bottom: 1.2rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus { border-color: #ff6b00; }
+
+    .deals-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.8rem; }
+
+    .deal-row { display: flex; gap: 0.5rem; }
+
+    .deal-row input { margin-bottom: 0; flex: 1; }
+
+    .btn-remove {
+      background: #2a2a2a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #888;
+      cursor: pointer;
+      padding: 0 0.8rem;
+      font-size: 1.1rem;
+      transition: color 0.2s;
+    }
+
+    .btn-remove:hover { color: #ff4444; }
+
+    .btn-add {
+      background: none;
+      border: 1px dashed #444;
+      border-radius: 8px;
+      color: #888;
+      cursor: pointer;
+      padding: 0.55rem;
+      width: 100%;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-add:hover { border-color: #ff6b00; color: #ff6b00; }
+
+    .btn-generate {
+      width: 100%;
+      padding: 0.8rem;
+      background: linear-gradient(90deg, #ff6b00, #ff0080);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-generate:hover { opacity: 0.9; }
+    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .error {
+      color: #ff4444;
+      font-size: 0.85rem;
+      margin-top: 0.8rem;
+      display: none;
+    }
+
+    /* Results */
+    #results {
+      width: 100%;
+      max-width: 600px;
+      margin-top: 2rem;
+      display: none;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .result-card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .result-card h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #ff6b00;
+      margin-bottom: 1rem;
+    }
+
+    #caption-text {
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #e0e0e0;
+    }
+
+    .copy-btn {
+      margin-top: 1rem;
+      background: #2a2a2a;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #aaa;
+      cursor: pointer;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+
+    .copy-btn:hover { color: #fff; }
+
+    audio { width: 100%; margin-top: 0.5rem; }
+
+    #poster-img {
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 0.5rem;
+    }
+
+    .download-link {
+      display: inline-block;
+      margin-top: 0.8rem;
+      font-size: 0.85rem;
+      color: #ff6b00;
+      text-decoration: none;
+    }
+
+    .download-link:hover { text-decoration: underline; }
+
+    .spinner {
+      display: none;
+      width: 20px; height: 20px;
+      border: 2px solid #fff3;
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>⚡ PhandaSnap</h1>
+    <p>AI-powered social media toolkit for your store promos</p>
+  </header>
+
+  <div class="card">
+    <label for="store_name">Store Name</label>
+    <input type="text" id="store_name" placeholder="e.g. Thandi's Chicken" />
+
+    <label for="promo_end">Promo End Date</label>
+    <input type="text" id="promo_end" placeholder="e.g. 30 April 2025" />
+
+    <label for="language">Language</label>
+    <select id="language">
+      <option value="English">English</option>
+      <option value="Zulu">Zulu</option>
+      <option value="Afrikaans">Afrikaans</option>
+      <option value="Xhosa">Xhosa</option>
+      <option value="Sotho">Sotho</option>
+    </select>
+
+    <label>Deals</label>
+    <div class="deals-list" id="deals-list">
+      <div class="deal-row">
+        <input type="text" placeholder="e.g. 2 pieces + chips for R49" />
+        <button class="btn-remove" onclick="removeDeal(this)">×</button>
+      </div>
+    </div>
+    <button class="btn-add" onclick="addDeal()">+ Add another deal</button>
+
+    <button class="btn-generate" id="gen-btn" onclick="generate()">
+      <span id="btn-label">Generate Assets</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+
+    <p class="error" id="error-msg"></p>
+  </div>
+
+  <div id="results">
+    <div class="result-card">
+      <h3>📱 Social Media Caption</h3>
+      <div id="caption-text"></div>
+      <button class="copy-btn" onclick="copyCaption()">Copy Caption</button>
+    </div>
+
+    <div class="result-card">
+      <h3>🔊 Voiceover</h3>
+      <audio id="audio-player" controls></audio>
+      <br/>
+      <a id="audio-download" class="download-link" download>⬇ Download WAV</a>
+    </div>
+
+    <div class="result-card" id="poster-card" style="display:none">
+      <h3>🎨 Social Graphic</h3>
+      <img id="poster-img" alt="Promotional poster" />
+      <br/>
+      <a id="poster-download" class="download-link" download>⬇ Download Image</a>
+    </div>
+  </div>
+
+  <script>
+    function addDeal() {
+      const row = document.createElement('div');
+      row.className = 'deal-row';
+      row.innerHTML = `<input type="text" placeholder="e.g. Family bucket for R199" /><button class="btn-remove" onclick="removeDeal(this)">×</button>`;
+      document.getElementById('deals-list').appendChild(row);
+    }
+
+    function removeDeal(btn) {
+      const list = document.getElementById('deals-list');
+      if (list.children.length > 1) btn.parentElement.remove();
+    }
+
+    function copyCaption() {
+      navigator.clipboard.writeText(document.getElementById('caption-text').innerText);
+    }
+
+    async function generate() {
+      const btn = document.getElementById('gen-btn');
+      const label = document.getElementById('btn-label');
+      const spinner = document.getElementById('spinner');
+      const errorMsg = document.getElementById('error-msg');
+
+      const store_name = document.getElementById('store_name').value.trim();
+      const promo_end = document.getElementById('promo_end').value.trim();
+      const language = document.getElementById('language').value;
+      const promos = [...document.querySelectorAll('#deals-list input')].map(i => i.value.trim()).filter(Boolean);
+
+      errorMsg.style.display = 'none';
+
+      if (!store_name || !promo_end || promos.length === 0) {
+        errorMsg.textContent = 'Please fill in all fields and add at least one deal.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      label.style.display = 'none';
+      spinner.style.display = 'block';
+      document.getElementById('results').style.display = 'none';
+
+      try {
+        const res = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ store_name, promo_end, promos, language }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorMsg.textContent = data.error || 'Something went wrong.';
+          errorMsg.style.display = 'block';
+          return;
+        }
+
+        document.getElementById('caption-text').textContent = data.caption;
+
+        const audio = document.getElementById('audio-player');
+        audio.src = data.audio_url;
+        document.getElementById('audio-download').href = data.audio_url;
+
+        const posterCard = document.getElementById('poster-card');
+        if (data.poster_url) {
+          document.getElementById('poster-img').src = data.poster_url;
+          document.getElementById('poster-download').href = data.poster_url;
+          posterCard.style.display = 'block';
+        } else {
+          posterCard.style.display = 'none';
+        }
+
+        document.getElementById('results').style.display = 'flex';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+      } catch (e) {
+        errorMsg.textContent = 'Network error. Is the server running?';
+        errorMsg.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        label.style.display = 'inline';
+        spinner.style.display = 'none';
+      }
+    }
+  </script>
+
+</body>
+</html>
