@@ -213,6 +213,12 @@
       <option value="Afrikaans">Afrikaans</option>
       <option value="Xhosa">Xhosa</option>
       <option value="Sotho">Sotho</option>
+      <option value="Tswana">Tswana</option>
+      <option value="Pedi">Pedi (Northern Sotho)</option>
+      <option value="Venda">Venda</option>
+      <option value="Tsonga">Tsonga</option>
+      <option value="Swati">Swati</option>
+      <option value="Ndebele">Ndebele</option>
     </select>
 
     <label>Deals</label>
@@ -246,12 +252,6 @@
       <a id="audio-download" class="download-link" download>⬇ Download WAV</a>
     </div>
 
-    <div class="result-card" id="poster-card" style="display:none">
-      <h3>🎨 Social Graphic</h3>
-      <img id="poster-img" alt="Promotional poster" />
-      <br/>
-      <a id="poster-download" class="download-link" download>⬇ Download Image</a>
-    </div>
   </div>
 
   <script>
@@ -315,15 +315,6 @@
         const audio = document.getElementById('audio-player');
         audio.src = data.audio_url;
         document.getElementById('audio-download').href = data.audio_url;
-
-        const posterCard = document.getElementById('poster-card');
-        if (data.poster_url) {
-          document.getElementById('poster-img').src = data.poster_url;
-          document.getElementById('poster-download').href = data.poster_url;
-          posterCard.style.display = 'block';
-        } else {
-          posterCard.style.display = 'none';
-        }
 
         document.getElementById('results').style.display = 'flex';
         document.getElementById('results').scrollIntoView({ behavior: 'smooth' });

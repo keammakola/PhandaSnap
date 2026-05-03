@@ -9,7 +9,6 @@ from pathlib import Path
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from generator import generate_script
 from audio import generate_audio
-from image import generate_poster
 
 app = Flask(__name__)
 OUTPUT_DIR = Path("outputs")
@@ -46,13 +45,9 @@ def generate():
     audio_path = OUTPUT_DIR / f"{slug}_voiceover.wav"
     generate_audio(voiceover, str(audio_path))
 
-    poster_path = OUTPUT_DIR / f"{slug}_social_graphic.jpg"
-    generate_poster(store_name, promos, str(poster_path))
-
     return jsonify({
         "caption": caption,
         "audio_url": f"/outputs/{slug}_voiceover.wav",
-        "poster_url": f"/outputs/{slug}_social_graphic.jpg" if poster_path.exists() else None,
     })
 
 

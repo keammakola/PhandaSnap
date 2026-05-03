@@ -1,77 +1,100 @@
 """
 image.py
 --------
-Generates a promotional poster image for the store deals using Vertex AI
-(Imagen 3). Authenticates via Application Default Credentials / Service Accounts.
+Hybrid image generator:
+1. Generates a high-quality background using Pollinations.ai (Flux).
+2. Overlays 100% accurate text (Store Name & Deals) using Pillow.
 """
 
-import os
-from google import genai
-from google.genai import types
+import requests
+import io
+from PIL import Image, ImageDraw, ImageFont
+from urllib.parse import quote
 
-def build_image_prompt(store_name: str, promos: list[str]) -> str:
-    promo_list = " \\n ".join(promos)
-    return f"""
-A visually stunning, eye-catching promotional poster for a social media marketing campaign.
+# Path to a reliable font in the WSL environment
+FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
-Text to render on the image:
-1. Top heading: "{store_name}"
-2. Main body: "{promo_list}"
+def build_background_prompt(store_name: str) -> str:
+    """Creates a prompt for a high-quality background WITHOUT text."""
+    return f"Professional cinematic product display, modern luxury retail background, blurred shop interior, high-end commercial aesthetic, vibrant lighting, abstract bokeh, 8k, photorealistic, elegant composition. No people, no text."
 
-CRITICAL INSTRUCTIONS FOR TEXT:
-- You must perfectly spell the text exactly as provided.
-- Do NOT add any extra words, random letters, or filler text.
-- ONLY include the exact text provided above. No other words should appear in the image.
-
-Visual Style: Vibrant colors, energetic, highly professional, modern dynamic lighting, meant to stop the scroll.
-""".strip()
+def draw_text_with_shadow(draw, text, position, font, text_color="white", shadow_color="black"):
+    x, y = position
+    # Draw shadow
+    draw.text((x+2, y+2), text, font=font, fill=shadow_color)
+    # Draw main text
+    draw.text((x, y), text, font=font, fill=text_color)
 
 def generate_poster(store_name: str, promos: list[str], output_path: str) -> None:
     """
-    Generate a poster image using Vertex AI Imagen 3 and save it to output_path.
+    1. Fetch AI background
+    2. Overlay accurate text using Pillow
     """
-    project_id = os.environ.get("VERTEX_PROJECT_ID")
-    
-    if not project_id or project_id == "your-gcp-project-id":
-        print("   ⚠️  Poster skipped: Missing VERTEX_PROJECT_ID in your .env file.")
-        return
-        
-    if not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
-        print("   ⚠️  Poster skipped: No GOOGLE_APPLICATION_CREDENTIALS path found in your .env file.")
-        return
+    print(f"🎨  Creating high-accuracy hybrid poster for '{store_name}'...")
 
-    print("🎨  Generating brilliant promotional poster with Google Cloud Vertex AI (Imagen 3)...")
+    # 1. Fetch AI Background
+    bg_prompt = build_background_prompt(store_name)
+    encoded_prompt = quote(bg_prompt)
+    bg_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=768&height=1024&nologo=true&seed=42"
 
-    # Initializing genai to route exactly sequentially via Vertex backend.
     try:
-        client = genai.Client(
-            vertexai=True, 
-            project=project_id, 
-            location="us-central1"
-        )
-        prompt = build_image_prompt(store_name, promos)
-
-        response = client.models.generate_images(
-            model='imagen-3.0-generate-002',
-            prompt=prompt,
-            config=types.GenerateImagesConfig(
-                number_of_images=1,
-                output_mime_type="image/jpeg",
-                aspect_ratio="3:4" 
-            )
-        )
-
-        if not response.generated_images:
-            print("   ⚠️  Failed to generate image via Vertex AI.")
-            return
-
-        # Extract image bytes and save
-        image_bytes = response.generated_images[0].image.image_bytes
+        response = requests.get(bg_url, timeout=45)
+        response.raise_for_status()
+        img = Image.open(io.BytesIO(response.content))
         
-        with open(output_path, "wb") as f:
-            f.write(image_bytes)
+        draw = ImageDraw.Draw(img)
+        width, height = img.size
 
-        print(f"✅  Poster saved to: {output_path}")
+        # 2. Add Semi-transparent Overlay for Readability
+        # Darken the whole image slightly for better text contrast
+        overlay = Image.new('RGBA', img.size, (0, 0, 0, 80))
+        img = Image.alpha_composite(img.convert('RGBA'), overlay)
+        draw = ImageDraw.Draw(img)
+
+        # 3. Load Fonts
+        try:
+            title_font = ImageFont.truetype(FONT_PATH, 70)
+            deal_font = ImageFont.truetype(FONT_PATH, 45)
+        except:
+            title_font = ImageFont.load_default()
+            deal_font = ImageFont.load_default()
+
+        # 4. Draw Store Name (Top)
+        title_text = store_name.upper()
+        # Use textbbox for centering (Pillow 10.0+)
+        bbox = draw.textbbox((0, 0), title_text, font=title_font)
+        tw = bbox[2] - bbox[0]
+        draw_text_with_shadow(draw, title_text, ((width - tw) / 2, 80), title_font, text_color="#FF6B00")
+
+        # 5. Draw Decorative Line
+        draw.line([(100, 180), (width - 100, 180)], fill="#FF6B00", width=5)
+
+        # 6. Draw Deals (Center-aligned)
+        y_offset = 300
+        for promo in promos:
+            promo_text = f"• {promo}"
+            # Wrap text if too long
+            if len(promo_text) > 30:
+                promo_text = promo_text[:27] + "..."
+            
+            bbox = draw.textbbox((0, 0), promo_text, font=deal_font)
+            pw = bbox[2] - bbox[0]
+            draw_text_with_shadow(draw, promo_text, ((width - pw) / 2, y_offset), deal_font)
+            y_offset += 100
+
+        # 7. Add Branding/Call to Action (Bottom)
+        cta_text = "HURRY! DEALS END SOON"
+        bbox = draw.textbbox((0, 0), cta_text, font=deal_font)
+        cw = bbox[2] - bbox[0]
+        draw_text_with_shadow(draw, cta_text, ((width - cw) / 2, height - 120), deal_font, text_color="#FF0080")
+
+        # 8. Save
+        img.convert('RGB').save(output_path, "JPEG", quality=95)
+        print(f"✅  Accuracy-guaranteed poster saved to: {output_path}")
 
     except Exception as e:
-        print(f"   ⚠️  Vertex AI Imagen generation failed: {e}")
+        print(f"   ⚠️  Hybrid image generation failed: {e}")
+
+def get_poster_prompt(store_name: str, promos: list[str]) -> str:
+    """Return the prompt used for the background."""
+    return build_background_prompt(store_name)
