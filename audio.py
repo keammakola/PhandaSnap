@@ -1,36 +1,25 @@
 """
 audio.py
 --------
-Converts a radio ad script to an audio file using Gemini's native TTS
-(gemini-3.1-flash-tts-preview model).
+Converts a radio ad script to audio bytes using Gemini's native TTS.
+Refactored to be stateless for serverless deployments (e.g., Vercel).
 """
 
 import os
 import wave
+import io
 from google import genai
 from google.genai import types
 
-def wave_file(filename, pcm, channels=1, rate=24000, sample_width=2):
-    """Saves raw PCM data to a WAV file."""
-    with wave.open(filename, "wb") as wf:
-        wf.setnchannels(channels)
-        wf.setsampwidth(sample_width)
-        wf.setframerate(rate)
-        wf.writeframes(pcm)
-
-def generate_audio(script: str, output_path: str) -> None:
+def generate_audio_bytes(script: str) -> bytes:
     """
-    Convert script text to speech using Gemini TTS and save as a .wav file.
-
-    Args:
-        script: The radio ad script text.
-        output_path: Full path where the .wav will be saved.
+    Convert script text to speech bytes using Gemini TTS.
+    Returns raw WAV bytes.
     """
-    print("🎙️  Converting script to high-quality audio via Gemini TTS...")
+    print("🎙️  Converting script to high-quality audio via Gemini TTS (Stateless)...")
 
     client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
-    # Provide clear instructing context natively to the voice act!
     tts_prompt = f"Say the following social media voiceover energetically with viral hype and enthusiasm: {script}"
 
     response = client.models.generate_content(
@@ -41,7 +30,7 @@ def generate_audio(script: str, output_path: str) -> None:
             speech_config=types.SpeechConfig(
                 voice_config=types.VoiceConfig(
                     prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                        voice_name='Aoede', # Aoede is great for energetic reads
+                        voice_name='Aoede',
                     )
                 )
             ),
@@ -49,9 +38,13 @@ def generate_audio(script: str, output_path: str) -> None:
     )
 
     # Extract PCM data
-    data = response.candidates[0].content.parts[0].inline_data.data
+    pcm_data = response.candidates[0].content.parts[0].inline_data.data
 
-    # Save to wav
-    wave_file(output_path, data)
-
-    print(f"✅  Audio saved to: {output_path}")
+    # Convert PCM to WAV in-memory
+    with io.BytesIO() as wav_io:
+        with wave.open(wav_io, "wb") as wf:
+            wf.setnchannels(1)
+            wf.setsampwidth(2)
+            wf.setframerate(24000)
+            wf.writeframes(pcm_data)
+        return wav_io.getvalue()

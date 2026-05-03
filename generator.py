@@ -2,7 +2,7 @@
 generator.py
 ------------
 Uses the Gemini API (google-genai SDK) to generate South African-style
-marketing content for various use cases.
+marketing content for various use cases, audiences, and tones.
 """
 
 import os
@@ -20,33 +20,40 @@ SCENARIO_CONTEXTS = {
     "Creative Agency": "Balanced, professional, and sophisticated. Focus on clear brand messaging and perfect tone."
 }
 
-def build_prompt(store_name: str, promo_end: str, promos: list[str], language: str, scenario: str) -> str:
+def build_prompt(store_name: str, promo_end: str, promos: list[str], language: str, scenario: str, audience: str, tone: str) -> str:
     promo_list = "\n".join(f"  - {p}" for p in promos)
     context = SCENARIO_CONTEXTS.get(scenario, SCENARIO_CONTEXTS["General Hustle"])
     
     return f"""
 You are an expert South African social media marketer and content creator.
-Your goal is to create a marketing campaign for the following scenario: **{scenario}**
+Your goal is to create a marketing campaign for the following settings:
+- **Campaign Type:** {scenario}
+- **Target Audience:** {audience}
+- **Tone of Voice:** {tone}
 
 **SCENARIO CONTEXT:**
 {context}
 
 **REQUIREMENTS:**
 1. The entire response must be in {language}.
-2. Use authentic South African slang and expressions that match {language} and the **{scenario}** vibe.
+2. Use authentic South African slang and expressions that match {language}, the **{scenario}** vibe, and the **{audience}** target.
 3. Mention the store/organization name ({store_name}), all deals/info clearly, and the end date ({promo_end}).
-4. Ensure the tone matches the scenario perfectly.
+4. Handle currency correctly: 'R' stands for South African Rand.
+5. **TONE:** Ensure the content is strictly in a **{tone}** tone.
+6. **AUDIENCE:** Tailor the vocabulary and style to appeal specifically to **{audience}**.
 
 **OUTPUT FORMAT:**
 You must provide exactly TWO sections separated by "===VOICEOVER===":
 
 [Section 1: The Caption/Text Component]
-Optimized for {scenario}.
+Optimized for {scenario}, targeted at {audience}, with a {tone} tone.
 
 ===VOICEOVER===
 
 [Section 2: The Spoken Component]
-Write the script for a voiceover or voice note. NO emojis. NO hashtags. NO stage directions. Just the exact, punchy words meant to be spoken out loud.
+Write the script for a voiceover or voice note. NO emojis. NO hashtags. NO stage directions.
+**CURRENCY RULE:** For the voiceover, always write out currency in the natural spoken order of {language} (e.g., in English use 'Twenty Rand', NOT 'Rand Twenty'; in Zulu use 'Amarandi angamashumi amabili').
+Just the exact, punchy words meant to be spoken out loud.
 
 Store name: {store_name}
 Valid until: {promo_end}
@@ -55,12 +62,12 @@ Current deals/info:
 """.strip()
 
 
-def generate_script(store_name: str, promo_end: str, promos: list[str], language: str = "English", scenario: str = "General Hustle") -> tuple[str, str]:
+def generate_script(store_name: str, promo_end: str, promos: list[str], language: str = "English", scenario: str = "General Hustle", audience: str = "General Public", tone: str = "Hype") -> tuple[str, str]:
     """Call Gemini and return (caption, voiceover)."""
     client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-    prompt = build_prompt(store_name, promo_end, promos, language, scenario)
+    prompt = build_prompt(store_name, promo_end, promos, language, scenario, audience, tone)
 
-    print(f"\n⚡  Generating {scenario} campaign in {language} with Gemini...")
+    print(f"\n⚡  Generating {scenario} campaign ({tone} tone for {audience}) in {language} with Gemini...")
     
     response = client.models.generate_content(
         model="gemini-2.5-flash",

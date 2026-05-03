@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hustle Engine</title>
+  <title>PhandaSnap</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -230,6 +230,28 @@
       <option value="NGO Announcement">NGO Announcement (Community Focused)</option>
       <option value="Creative Agency">Creative Agency (Professional)</option>
     </select>
+
+    <div style="display: flex; gap: 1rem;">
+      <div style="flex: 1;">
+        <label for="audience">Target Audience</label>
+        <select id="audience">
+          <option value="General Public">General Public</option>
+          <option value="Youth / Gen Z">Youth / Gen Z</option>
+          <option value="Families">Families</option>
+          <option value="Professionals">Professionals</option>
+          <option value="Elders">Elders</option>
+        </select>
+      </div>
+      <div style="flex: 1;">
+        <label for="tone">Tone of Voice</label>
+        <select id="tone">
+          <option value="Hype">Hype & Energetic</option>
+          <option value="Funny">Funny & Relatable</option>
+          <option value="Heartfelt">Heartfelt & Sincere</option>
+          <option value="Professional">Professional & Direct</option>
+        </select>
+      </div>
+    </div>
     <div class="deals-list" id="deals-list">
       <div class="deal-row">
         <input type="text" placeholder="e.g. 2 pieces + chips for R49" />
@@ -251,13 +273,15 @@
       <h3>📱 Social Media Caption</h3>
       <div id="caption-text"></div>
       <button class="copy-btn" onclick="copyCaption()">Copy Caption</button>
+      <br/>
+      <button class="download-link" style="background:none; border:none; padding:0; font-family:inherit; cursor:pointer;" onclick="downloadCaption()">⬇ Download Text</button>
     </div>
 
     <div class="result-card">
       <h3>🔊 Voiceover</h3>
       <audio id="audio-player" controls></audio>
       <br/>
-      <a id="audio-download" class="download-link" download>⬇ Download WAV</a>
+      <button id="audio-download" class="download-link" style="background:none; border:none; padding:0; font-family:inherit; cursor:pointer;">⬇ Download WAV</button>
     </div>
 
   </div>
@@ -279,6 +303,19 @@
       navigator.clipboard.writeText(document.getElementById('caption-text').innerText);
     }
 
+    let currentCaption = '';
+    let currentFilename = 'phandasnap_assets';
+
+    function downloadCaption() {
+      const blob = new Blob([currentCaption], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentFilename}.txt`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+
     async function generate() {
       const btn = document.getElementById('gen-btn');
       const label = document.getElementById('btn-label');
@@ -289,6 +326,8 @@
       const promo_end = document.getElementById('promo_end').value.trim();
       const language = document.getElementById('language').value;
       const scenario = document.getElementById('scenario').value;
+      const audience = document.getElementById('audience').value;
+      const tone = document.getElementById('tone').value;
       const promos = [...document.querySelectorAll('#deals-list input')].map(i => i.value.trim()).filter(Boolean);
 
       errorMsg.style.display = 'none';
@@ -308,7 +347,7 @@
         const res = await fetch('/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ store_name, promo_end, promos, language, scenario }),
+          body: JSON.stringify({ store_name, promo_end, promos, language, scenario, audience, tone }),
         });
 
         const data = await res.json();
@@ -320,10 +359,19 @@
         }
 
         document.getElementById('caption-text').textContent = data.caption;
+        currentCaption = data.caption;
+        currentFilename = data.filename;
 
         const audio = document.getElementById('audio-player');
-        audio.src = data.audio_url;
-        document.getElementById('audio-download').href = data.audio_url;
+        audio.src = data.audio_b64;
+        
+        const audioDownload = document.getElementById('audio-download');
+        audioDownload.onclick = () => {
+          const a = document.createElement('a');
+          a.href = data.audio_b64;
+          a.download = `${data.filename}.wav`;
+          a.click();
+        };
 
         document.getElementById('results').style.display = 'flex';
         document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
