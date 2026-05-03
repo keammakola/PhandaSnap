@@ -30,6 +30,7 @@ def generate():
     promo_end = data.get("promo_end", "").strip()
     promos = [p.strip() for p in data.get("promos", []) if p.strip()]
     language = data.get("language", "English").strip() or "English"
+    scenario = data.get("scenario", "General Hustle").strip() or "General Hustle"
 
     if not store_name or not promo_end or not promos:
         return jsonify({"error": "Store name, promo end date, and at least one deal are required."}), 400
@@ -37,7 +38,7 @@ def generate():
     slug = slugify(store_name)
     OUTPUT_DIR.mkdir(exist_ok=True)
 
-    caption, voiceover = generate_script(store_name, promo_end, promos, language)
+    caption, voiceover = generate_script(store_name, promo_end, promos, language, scenario)
 
     caption_path = OUTPUT_DIR / f"{slug}_caption.txt"
     caption_path.write_text(caption, encoding="utf-8")

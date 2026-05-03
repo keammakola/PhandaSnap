@@ -221,7 +221,15 @@
       <option value="Ndebele">Ndebele</option>
     </select>
 
-    <label>Deals</label>
+    <label for="scenario">Campaign Type</label>
+    <select id="scenario">
+      <option value="General Hustle">General Hustle (Viral Style)</option>
+      <option value="WhatsApp Status">WhatsApp Status (Short & Punchy)</option>
+      <option value="Spaza/Store Sale">Spaza/Store Sale (Radio Style)</option>
+      <option value="Community Market">Community Market (Friendly & Local)</option>
+      <option value="NGO Announcement">NGO Announcement (Community Focused)</option>
+      <option value="Creative Agency">Creative Agency (Professional)</option>
+    </select>
     <div class="deals-list" id="deals-list">
       <div class="deal-row">
         <input type="text" placeholder="e.g. 2 pieces + chips for R49" />
@@ -280,6 +288,7 @@
       const store_name = document.getElementById('store_name').value.trim();
       const promo_end = document.getElementById('promo_end').value.trim();
       const language = document.getElementById('language').value;
+      const scenario = document.getElementById('scenario').value;
       const promos = [...document.querySelectorAll('#deals-list input')].map(i => i.value.trim()).filter(Boolean);
 
       errorMsg.style.display = 'none';
@@ -299,7 +308,7 @@
         const res = await fetch('/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ store_name, promo_end, promos, language }),
+          body: JSON.stringify({ store_name, promo_end, promos, language, scenario }),
         });
 
         const data = await res.json();
