@@ -157,3 +157,12 @@ cython_debug/
 
 # VS Code
 .vscode/
+
+# Local Google Cloud SDK
+google-cloud-sdk/
+*.tar.gz
+
+# Runtime logs/data
+generation_log.csv
+*.csv
+firebase-debug.log

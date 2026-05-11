@@ -1,0 +1,13 @@
+.git
+.gitignore
+__pycache__
+*.pyc
+venv
+.env
+.firebaserc
+firebase.json
+outputs
+node_modules
+README_FIREBASE.md
+Dockerfile
+.dockerignore

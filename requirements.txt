@@ -2,3 +2,6 @@ google-genai
 python-dotenv
 flask
 requests
+firebase-functions
+flask-cors
+gunicorn

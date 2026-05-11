@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PhandaSnap — Completely Free AI Tool</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #f0f0f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      background: linear-gradient(90deg, #ff6b00, #ff0080);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p { color: #888; margin-top: 0.4rem; font-size: 0.95rem; }
+
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 1rem;
+    }
+
+    label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 0.4rem; }
+
+    input, select {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #f0f0f0;
+      font-size: 0.95rem;
+      margin-bottom: 1.2rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus { border-color: #ff6b00; }
+
+    .api-key-box {
+      border: 1px solid #333;
+      padding: 1rem;
+      border-radius: 8px;
+      background: #151515;
+      margin-bottom: 1.5rem;
+    }
+
+    .deals-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.8rem; }
+
+    .deal-row { display: flex; gap: 0.5rem; }
+
+    .deal-row input { margin-bottom: 0; flex: 1; }
+
+    .btn-remove {
+      background: #2a2a2a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #888;
+      cursor: pointer;
+      padding: 0 0.8rem;
+      font-size: 1.1rem;
+      transition: color 0.2s;
+    }
+
+    .btn-remove:hover { color: #ff4444; }
+
+    .btn-add {
+      background: none;
+      border: 1px dashed #444;
+      border-radius: 8px;
+      color: #888;
+      cursor: pointer;
+      padding: 0.55rem;
+      width: 100%;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-add:hover { border-color: #ff6b00; color: #ff6b00; }
+
+    .btn-generate {
+      width: 100%;
+      padding: 0.8rem;
+      background: linear-gradient(90deg, #ff6b00, #ff0080);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-generate:hover { opacity: 0.9; }
+    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .error {
+      color: #ff4444;
+      font-size: 0.85rem;
+      margin-top: 0.8rem;
+      display: none;
+    }
+
+    /* Results */
+    #results {
+      width: 100%;
+      max-width: 600px;
+      margin-top: 2rem;
+      display: none;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .result-card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .result-card h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #ff6b00;
+      margin-bottom: 1rem;
+    }
+
+    #caption-text {
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #e0e0e0;
+    }
+
+    .copy-btn, .speak-btn {
+      margin-top: 1rem;
+      background: #2a2a2a;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #aaa;
+      cursor: pointer;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+      margin-right: 0.5rem;
+    }
+
+    .copy-btn:hover, .speak-btn:hover { color: #fff; border-color: #ff6b00; }
+
+    .download-link {
+      display: inline-block;
+      margin-top: 0.8rem;
+      font-size: 0.85rem;
+      color: #ff6b00;
+      text-decoration: none;
+    }
+
+    .download-link:hover { text-decoration: underline; }
+
+    .spinner {
+      display: none;
+      width: 20px; height: 20px;
+      border: 2px solid #fff3;
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>⚡ PhandaSnap</h1>
+    <p>Completely Free AI Social Media Toolkit</p>
+  </header>
+
+  <div class="card">
+    <div class="api-key-box">
+      <label for="gemini_api_key">Your Gemini API Key (Stored locally)</label>
+      <input type="password" id="gemini_api_key" placeholder="Enter API Key..." />
+      <p style="font-size: 0.75rem; color: #666;">Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #ff6b00;">AI Studio</a></p>
+    </div>
+
+    <label for="store_name">Store Name</label>
+    <input type="text" id="store_name" placeholder="e.g. Thandi's Chicken" />
+
+    <label for="promo_end">Promo End Date</label>
+    <input type="text" id="promo_end" placeholder="e.g. 30 April 2025" />
+
+    <label for="language">Language</label>
+    <select id="language">
+      <option value="English">English</option>
+      <option value="Zulu">Zulu</option>
+      <option value="Afrikaans">Afrikaans</option>
+      <option value="Xhosa">Xhosa</option>
+      <option value="Sotho">Sotho</option>
+      <option value="Tswana">Tswana</option>
+      <option value="Pedi">Pedi (Northern Sotho)</option>
+      <option value="Venda">Venda</option>
+      <option value="Tsonga">Tsonga</option>
+      <option value="Swati">Swati</option>
+      <option value="Ndebele">Ndebele</option>
+    </select>
+
+    <label for="scenario">Campaign Type</label>
+    <select id="scenario">
+      <option value="General Hustle">General Hustle (Viral Style)</option>
+      <option value="WhatsApp Status">WhatsApp Status (Short & Punchy)</option>
+      <option value="Spaza/Store Sale">Spaza/Store Sale (Radio Style)</option>
+      <option value="Community Market">Community Market (Friendly & Local)</option>
+      <option value="NGO Announcement">NGO Announcement (Community Focused)</option>
+      <option value="Creative Agency">Creative Agency (Professional)</option>
+    </select>
+
+    <div style="display: flex; gap: 1rem;">
+      <div style="flex: 1;">
+        <label for="audience">Target Audience</label>
+        <select id="audience">
+          <option value="General Public">General Public</option>
+          <option value="Youth / Gen Z">Youth / Gen Z</option>
+          <option value="Families">Families</option>
+          <option value="Professionals">Professionals</option>
+          <option value="Elders">Elders</option>
+        </select>
+      </div>
+      <div style="flex: 1;">
+        <label for="tone">Tone of Voice</label>
+        <select id="tone">
+          <option value="Hype">Hype & Energetic</option>
+          <option value="Funny">Funny & Relatable</option>
+          <option value="Heartfelt">Heartfelt & Sincere</option>
+          <option value="Professional">Professional & Direct</option>
+        </select>
+      </div>
+    </div>
+    <div class="deals-list" id="deals-list">
+      <div class="deal-row">
+        <input type="text" placeholder="e.g. 2 pieces + chips for R49" />
+        <button class="btn-remove" onclick="removeDeal(this)">×</button>
+      </div>
+    </div>
+    <button class="btn-add" onclick="addDeal()">+ Add another deal</button>
+
+    <button class="btn-generate" id="gen-btn" onclick="generate()">
+      <span id="btn-label">Generate Assets (Free)</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+
+    <p class="error" id="error-msg"></p>
+  </div>
+
+  <div id="results">
+    <div class="result-card">
+      <h3>📱 Social Media Caption</h3>
+      <div id="caption-text"></div>
+      <button class="copy-btn" onclick="copyCaption()">Copy Caption</button>
+    </div>
+
+    <div class="result-card">
+      <h3>🔊 Free Voiceover (Browser Speech)</h3>
+      <p id="voiceover-text" style="color: #888; font-size: 0.9rem; font-style: italic; margin-bottom: 1rem;"></p>
+      <button class="speak-btn" onclick="speak()">▶ Play Voiceover</button>
+      <button class="speak-btn" onclick="stopSpeak()">Stop</button>
+    </div>
+  </div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "@google/generative-ai": "https://esm.run/@google/generative-ai"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import { GoogleGenerativeAI } from "@google/generative-ai";
+
+    // Load API Key from local storage
+    const apiKeyInput = document.getElementById('gemini_api_key');
+    apiKeyInput.value = localStorage.getItem('phandasnap_api_key') || '';
+    apiKeyInput.onchange = (e) => localStorage.setItem('phandasnap_api_key', e.target.value);
+
+    window.addDeal = function() {
+      const row = document.createElement('div');
+      row.className = 'deal-row';
+      row.innerHTML = `<input type="text" placeholder="e.g. Family bucket for R199" /><button class="btn-remove" onclick="removeDeal(this)">×</button>`;
+      document.getElementById('deals-list').appendChild(row);
+    }
+
+    window.removeDeal = function(btn) {
+      const list = document.getElementById('deals-list');
+      if (list.children.length > 1) btn.parentElement.remove();
+    }
+
+    window.copyCaption = function() {
+      navigator.clipboard.writeText(document.getElementById('caption-text').innerText);
+    }
+
+    let currentVoiceover = '';
+
+    window.speak = function() {
+      if (!currentVoiceover) return;
+      window.speechSynthesis.cancel();
+      const msg = new SpeechSynthesisUtterance(currentVoiceover);
+      
+      // Try to find a matching language voice
+      const lang = document.getElementById('language').value;
+      const voices = window.speechSynthesis.getVoices();
+      
+      // Simple language mapping for browser voices
+      const langMap = {
+        'English': 'en',
+        'Afrikaans': 'af',
+        'Zulu': 'zu',
+        'Xhosa': 'xh'
+      };
+      
+      const targetLang = langMap[lang] || 'en';
+      const voice = voices.find(v => v.lang.startsWith(targetLang));
+      if (voice) msg.voice = voice;
+      
+      msg.rate = 0.95; // Slightly slower for clarity
+      msg.pitch = 1.0;
+      window.speechSynthesis.speak(msg);
+    }
+
+    window.stopSpeak = function() {
+      window.speechSynthesis.cancel();
+    }
+
+    const SCENARIO_CONTEXTS = {
+        "General Hustle": "A high-energy, viral social media style (TikTok/Instagram). Use extreme hype and FOMO.",
+        "WhatsApp Status": "Short, punchy, and emoji-heavy. Perfect for quick viewing and high conversion on mobile.",
+        "Spaza/Store Sale": "Traditional local 'radio ad' style. Focus heavily on prices and immediate store visits.",
+        "Community Market": "Inviting, friendly, and warm. Focus on community spirit and high-quality local products.",
+        "NGO Announcement": "Clear, informative, and community-focused. Use a helpful and respectful but engaging tone.",
+        "Creative Agency": "Balanced, professional, and sophisticated. Focus on clear brand messaging and perfect tone."
+    };
+
+    window.generate = async function() {
+      const btn = document.getElementById('gen-btn');
+      const label = document.getElementById('btn-label');
+      const spinner = document.getElementById('spinner');
+      const errorMsg = document.getElementById('error-msg');
+      const apiKey = apiKeyInput.value.trim();
+
+      if (!apiKey) {
+        errorMsg.textContent = 'Please enter your Gemini API Key first.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      const store_name = document.getElementById('store_name').value.trim();
+      const promo_end = document.getElementById('promo_end').value.trim();
+      const language = document.getElementById('language').value;
+      const scenario = document.getElementById('scenario').value;
+      const audience = document.getElementById('audience').value;
+      const tone = document.getElementById('tone').value;
+      const promos = [...document.querySelectorAll('#deals-list input')].map(i => i.value.trim()).filter(Boolean);
+
+      errorMsg.style.display = 'none';
+
+      if (!store_name || !promo_end || promos.length === 0) {
+        errorMsg.textContent = 'Please fill in all fields and add at least one deal.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      label.style.display = 'none';
+      spinner.style.display = 'block';
+      document.getElementById('results').style.display = 'none';
+
+      try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        const promo_list = promos.map(p => `  - ${p}`).join('\n');
+        const context = SCENARIO_CONTEXTS[scenario] || SCENARIO_CONTEXTS["General Hustle"];
+        
+        const prompt = `
+You are an expert South African social media marketer and content creator.
+Your goal is to create a marketing campaign for:
+- Store: ${store_name}
+- End Date: ${promo_end}
+- Deals: \n${promo_list}
+- Language: ${language}
+- Campaign Type: ${scenario}
+- Target Audience: ${audience}
+- Tone: ${tone}
+
+CONTEXT: ${context}
+
+REQUIREMENTS:
+1. Response in ${language}.
+2. Use authentic South African slang/expressions.
+3. OUTPUT exactly TWO sections separated by "===VOICEOVER===":
+   Section 1: The Social Media Caption.
+   ===VOICEOVER===
+   Section 2: The Spoken Script (No emojis, no hashtags).
+`.trim();
+
+        const result = await model.generateContent(prompt);
+        const output = result.response.text().strip();
+
+        const parts = output.split("===VOICEOVER===");
+        const caption = parts[0]?.trim() || output;
+        const voiceover = parts[1]?.trim() || "";
+
+        document.getElementById('caption-text').textContent = caption;
+        document.getElementById('voiceover-text').textContent = voiceover;
+        currentVoiceover = voiceover;
+
+        document.getElementById('results').style.display = 'flex';
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+      } catch (e) {
+        console.error(e);
+        errorMsg.textContent = 'Error: ' + (e.message || 'Check your API Key and try again.');
+        errorMsg.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        label.style.display = 'inline';
+        spinner.style.display = 'none';
+      }
+    }
+
+    // Polyfill for string.strip()
+    if (!String.prototype.strip) {
+        String.prototype.strip = function() {
+            return this.trim();
+        };
+    }
+
+    // Ensure voices are loaded
+    window.speechSynthesis.getVoices();
+  </script>
+
+</body>
+</html>

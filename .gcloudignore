@@ -1,0 +1,14 @@
+.gcloudignore
+.git
+.gitignore
+node_modules
+venv
+.env
+google-cloud-sdk
+google-cloud-cli-linux-x86_64.tar.gz
+outputs
+public
+.firebaserc
+firebase.json
+*.pyc
+__pycache__
