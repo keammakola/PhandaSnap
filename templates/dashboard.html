@@ -271,7 +271,7 @@ function renderResults() {
 
   document.getElementById('topstrip').textContent = 'Your campaigns';
   document.getElementById('resultsHeading').textContent = profile.store_name || 'Your campaigns';
-  document.getElementById('resultsSubtext').textContent = `${calendar.length} campaigns · ${language}`;
+  document.getElementById('resultsSubtext').textContent = language;
 
   const container = document.getElementById('resultsContent');
   container.innerHTML = calendar.map(item => {
@@ -310,10 +310,9 @@ async function startGeneration() {
   dashboard = await res.json();
   const calendar = dashboard.calendar || [];
 
-  for (let i = 0; i < calendar.length; i++) {
-    const item = calendar[i];
-    document.getElementById('loadingLabel').textContent =
-      `Generating campaign ${i + 1} of ${calendar.length}…`;
+  const item = calendar[0];
+  if (item) {
+    document.getElementById('loadingLabel').textContent = 'Generating your campaign…';
     const r = await fetch('/api/calendar/generate-assets', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -321,7 +320,7 @@ async function startGeneration() {
     });
     if (r.ok) {
       const updated = await r.json();
-      dashboard.calendar = dashboard.calendar.map(c => c.id === updated.id ? updated : c);
+      dashboard.calendar = [updated];
     }
   }
 
