@@ -1,158 +1,343 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PhandaSnap Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhandaSnap — Dashboard</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap');
-  :root{--kasi-red:#D6342C;--spaza-green:#1E7A46;--charcoal:#231F20;--chalk-dim:#EFE9DD;--chalk:#FBF8F2}
-  body{font-family:Inter,system-ui,Arial;margin:0;background:var(--chalk-dim);color:var(--charcoal);padding:28px}
-  .wrap{max-width:980px;margin:0 auto}
-  header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  h1{margin:0;font-family:Archivo Black, sans-serif}
-  .controls{display:flex;gap:8px;align-items:center}
-  .card{background:#fff;padding:14px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.06);}
-  .grid{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:18px}
-  .calendar-list{display:flex;flex-direction:column;gap:12px}
-  .campaign-card{padding:12px;border-radius:10px;background:linear-gradient(180deg,#fff,#fbfbfb);}
-  .campaign-top{display:flex;justify-content:space-between}
-  .campaign-title{font-weight:700}
-  .actions{display:flex;gap:8px;margin-top:10px}
-  button{padding:10px 12px;border-radius:8px;border:none;cursor:pointer}
-  .btn-primary{background:var(--kasi-red);color:#fff}
-  .btn-ghost{background:transparent;border:1px solid var(--chalk-dim)}
-  .side{display:flex;flex-direction:column;gap:12px}
-  .copy-box{background:var(--chalk-dim);padding:10px;border-radius:8px}
-  select,input{padding:10px;border-radius:8px;border:2px solid var(--chalk-dim);width:100%}
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root{
+    --hustle-yellow:#F5B900;
+    --kasi-red:#D6342C;
+    --spaza-green:#1E7A46;
+    --taxi-blue:#1A3E8C;
+    --charcoal:#231F20;
+    --chalk:#FBF8F2;
+    --chalk-dim:#EFE9DD;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--chalk-dim);
+    color:var(--charcoal);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    padding:20px;
+  }
+
+  .phone{
+    width:100%;
+    max-width:400px;
+    background:var(--chalk);
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 20px 50px rgba(35,31,32,0.25);
+    display:flex;
+    flex-direction:column;
+    min-height:680px;
+  }
+
+  .topstrip{
+    background:var(--hustle-yellow);
+    color:var(--charcoal);
+    font-weight:700;
+    font-size:13px;
+    padding:10px 20px;
+    text-align:center;
+    letter-spacing:0.02em;
+  }
+
+  .content{
+    flex:1;
+    padding:28px 24px 20px;
+    display:flex;
+    flex-direction:column;
+    overflow-y:auto;
+  }
+
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    font-weight:600;
+    color:var(--taxi-blue);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    margin-bottom:6px;
+  }
+
+  h1{
+    font-family:'Archivo Black',sans-serif;
+    font-size:26px;
+    line-height:1.15;
+    margin:0 0 8px;
+    color:var(--charcoal);
+  }
+
+  .subtext{
+    font-size:14px;
+    color:#5b5654;
+    margin:0 0 24px;
+    line-height:1.5;
+  }
+
+  .field{margin-bottom:18px;}
+  .field label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:8px;
+    color:var(--charcoal);
+  }
+
+  select{
+    width:100%;
+    padding:13px 14px;
+    border:2px solid var(--chalk-dim);
+    border-radius:10px;
+    background:#fff;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    outline:none;
+  }
+
+  button{
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    border:none;
+    border-radius:10px;
+    padding:15px 20px;
+    cursor:pointer;
+    transition:transform .1s, opacity .15s;
+  }
+  button:active{transform:scale(0.97);}
+
+  .btn-primary{background:var(--kasi-red);color:#fff;}
+  .btn-primary:disabled{opacity:0.35;cursor:not-allowed;}
+  .btn-ghost{
+    background:transparent;
+    color:var(--charcoal);
+    border:2px solid var(--chalk-dim);
+    padding:13px 16px;
+  }
+
+  .dashboard-summary{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .stat-card{
+    padding:14px 16px;
+    border-radius:16px;
+    background:#fff;
+    box-shadow:0 10px 22px rgba(35,31,32,0.08);
+  }
+  .stat-card .label{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:#7f7a75;
+    margin-bottom:6px;
+    font-weight:700;
+  }
+  .stat-card .value{
+    font-size:18px;
+    font-weight:700;
+    color:var(--charcoal);
+  }
+
+  .dashboard-calendar{display:flex;flex-direction:column;gap:14px;}
+
+  .campaign-card{
+    background:#fff;
+    border-radius:20px;
+    padding:16px;
+    box-shadow:0 12px 24px rgba(35,31,32,0.08);
+  }
+  .campaign-top{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    align-items:flex-start;
+    margin-bottom:10px;
+  }
+  .campaign-title{font-weight:700;font-size:15px;}
+  .status-chip{
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    color:#fff;
+    background:var(--kasi-red);
+    white-space:nowrap;
+  }
+  .status-chip.Approved{background:var(--spaza-green);}
+  .status-chip.Completed{background:var(--taxi-blue);}
+
+  .campaign-copy{
+    font-size:14px;
+    line-height:1.5;
+    margin-bottom:10px;
+    color:#4a4542;
+  }
+  .campaign-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .campaign-actions button{flex:1;min-width:140px;}
+
+  .copy-box{
+    background:var(--chalk-dim);
+    padding:14px 16px;
+    border-radius:16px;
+    font-size:14px;
+    line-height:1.5;
+    color:#403b37;
+  }
+  .copy-box pre{
+    white-space:pre-wrap;
+    word-break:break-word;
+    margin:0;
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+  }
+  .copy-row{margin-bottom:12px;}
+  .copy-row .copy-label{font-weight:700;margin-bottom:4px;display:block;color:var(--charcoal);}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div>
-      <h1>PhandaSnap Dashboard</h1>
-      <div style="color:#6b6563">14-day calendar · Generate assets & voiceovers</div>
-    </div>
-    <div class="controls">
-      <select id="langPicker"><option>English</option><option>isiZulu</option><option>Afrikaans</option><option>Sesotho</option></select>
-      <input id="gemKey" placeholder="GEMINI_API_KEY (optional)" style="min-width:260px" />
-      <button class="btn-primary" id="saveKeyBtn">Save key</button>
-    </div>
-  </header>
 
-  <div class="grid">
-    <div>
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <strong>Calendar</strong>
-          <div id="summarySmall" style="color:#6b6563"></div>
-        </div>
-        <div id="calendar" class="calendar-list" style="margin-top:12px"></div>
-      </div>
+<div class="phone">
+  <div class="topstrip">Your dashboard</div>
+
+  <div class="content">
+    <div class="eyebrow">Dashboard</div>
+    <h1>Your 14-day campaign calendar</h1>
+    <p class="subtext">Generate assets, pick a language, and play your campaign voiceover.</p>
+
+    <div class="field">
+      <label>Language for assets</label>
+      <select id="defaultLanguage" onchange="onLanguageChange()">
+        <option value="English">English</option>
+        <option value="isiZulu">isiZulu</option>
+        <option value="Afrikaans">Afrikaans</option>
+        <option value="Sesotho">Sesotho</option>
+      </select>
     </div>
-    <aside class="side">
-      <div class="card">
-        <strong>Selected campaign</strong>
-        <div id="selectedInfo" style="margin-top:8px;color:#6b6563">Pick a campaign to view details</div>
-      </div>
-      <div class="card">
-        <strong>Generated copy</strong>
-        <div id="copyArea" class="copy-box" style="height:240px;overflow:auto;margin-top:8px">No assets generated yet.</div>
-      </div>
-    </aside>
+
+    <div class="dashboard-summary" id="dashboardSummary"></div>
+    <div class="dashboard-calendar" id="dashboardContent">
+      <div class="copy-box">Loading campaigns…</div>
+    </div>
   </div>
 </div>
 
 <script>
-async function fetchDashboard(){
-  const res = await fetch('/api/dashboard');
-  if(!res.ok) return null;
-  return await res.json();
+let currentLanguage = 'English';
+let dashboard = null;
+
+function getCaptionForLanguage(copySuite, language){
+  if(!copySuite) return '';
+  return {
+    English: copySuite.english_caption || copySuite.caption,
+    isiZulu: copySuite.zulu_caption || copySuite.caption,
+    Afrikaans: copySuite.afrikaans_caption || copySuite.caption,
+    Sesotho: copySuite.sesotho_caption || copySuite.caption
+  }[language] || copySuite.caption || '';
 }
 
-function createCampaignNode(item){
-  const div = document.createElement('div');
-  div.className = 'campaign-card card';
-  div.innerHTML = `
-    <div class="campaign-top">
-      <div>
-        <div class="campaign-title">${item.day_name} • ${item.date}</div>
-        <div style="color:#6b6563">${item.trigger} — ${item.concept}</div>
-      </div>
-      <div style="text-align:right"><div style="font-weight:700">${item.channel}</div><div style="color:#6b6563">${item.status}</div></div>
-    </div>
-    <div style="margin-top:8px;color:#4a4542">Deals: ${item.deals.map(d=>'• '+d).join('<br>')}</div>
-    <div class="actions">
-      <button class="btn-primary" onclick="generateAssets(${item.id})">${item.assets? 'Refresh assets':'Generate assets'}</button>
-      ${/* placeholder */''}
-    </div>
+function renderDashboard(){
+  const analytics = dashboard.analytics || {};
+  const calendar = dashboard.calendar || [];
+
+  document.getElementById('dashboardSummary').innerHTML = `
+    <div class="stat-card"><div class="label">Campaigns</div><div class="value">${analytics.total_campaigns||0}</div></div>
+    <div class="stat-card"><div class="label">Clicks</div><div class="value">${analytics.total_clicks||0}</div></div>
+    <div class="stat-card"><div class="label">Redemptions</div><div class="value">${analytics.total_redemptions||0}</div></div>
+    <div class="stat-card"><div class="label">Revenue</div><div class="value">R${analytics.estimated_revenue||0}</div></div>
   `;
-  div.onclick = ()=> selectCampaign(item);
-  return div;
-}
 
-let DASH = null;
-let SELECTED = null;
-
-async function render(){
-  const data = await fetchDashboard();
-  DASH = data;
-  document.getElementById('langPicker').value = 'English';
-  document.getElementById('calendar').innerHTML = '';
-  if(!data || !data.calendar) { document.getElementById('calendar').innerHTML='<div class="copy-box">No calendar</div>'; return; }
-  data.calendar.forEach(it=>{
-    const node = createCampaignNode(it);
-    document.getElementById('calendar').appendChild(node);
-  });
-  document.getElementById('summarySmall').textContent = `${data.calendar.length} days · ${data.analytics.total_campaigns || 0} campaigns`;
-}
-
-function selectCampaign(item){
-  SELECTED = item;
-  document.getElementById('selectedInfo').innerHTML = `<div style="font-weight:700">${item.concept}</div><div style="color:#6b6563">${item.date} · ${item.channel} · ${item.status}</div>`;
-  if(item.assets){
-    document.getElementById('copyArea').innerHTML = `
-      <strong>Caption</strong><div style="margin:6px 0">${item.assets.copy_suite.caption||''}</div>
-      <strong>WhatsApp</strong><div style="margin:6px 0">${item.assets.copy_suite.whatsapp_text||''}</div>
-      <strong>TikTok script</strong><div style="margin:6px 0">${item.assets.copy_suite.tiktok_script||''}</div>
-      <audio controls src="${item.assets.voiceover_url}" style="width:100%"></audio>
-    `;
-  } else {
-    document.getElementById('copyArea').innerHTML = 'No assets yet — click Generate assets.';
+  const container = document.getElementById('dashboardContent');
+  if(!calendar.length){
+    container.innerHTML = '<div class="copy-box">No campaign calendar available yet.</div>';
+    return;
   }
+
+  container.innerHTML = calendar.map(item => {
+    const copySuite = item.assets?.copy_suite || {};
+    const caption = getCaptionForLanguage(copySuite, currentLanguage);
+    const hasAssets = !!item.assets;
+    const deals = item.deals?.map(d=>`<li>${d}</li>`).join('') || '';
+    return `
+      <div class="campaign-card">
+        <div class="campaign-top">
+          <div>
+            <div class="campaign-title">${item.day_name} • ${item.date}</div>
+            <div class="campaign-copy">${item.trigger} — ${item.concept}</div>
+          </div>
+          <div class="status-chip ${item.status}">${item.status}</div>
+        </div>
+        <div class="campaign-copy"><strong>Channel:</strong> ${item.channel}</div>
+        <div class="campaign-copy"><strong>Deals:</strong><ul style="margin:8px 0 0;padding-left:18px;">${deals}</ul></div>
+        <div class="campaign-actions">
+          <button class="btn-primary" onclick="generateAssets(${item.id})">${hasAssets?'Refresh assets':'Generate assets'}</button>
+          ${hasAssets?`<button class="btn-ghost" onclick="downloadZip(${item.id})">Download ZIP</button>`:''}
+        </div>
+        ${hasAssets?`
+        <div class="copy-box">
+          <div class="copy-row"><span class="copy-label">Caption (${currentLanguage})</span><pre>${caption}</pre></div>
+          <div class="copy-row"><span class="copy-label">WhatsApp message</span><pre>${copySuite.whatsapp_text||''}</pre></div>
+          <div class="copy-row"><span class="copy-label">Community WA group</span><pre>${copySuite.community_whatsapp_group||''}</pre></div>
+          <div class="copy-row"><span class="copy-label">TikTok script</span><pre>${copySuite.tiktok_script||''}</pre></div>
+          <div class="copy-row"><span class="copy-label">Voiceover script</span><pre>${copySuite.voiceover||''}</pre></div>
+          <audio controls src="${item.assets.voiceover_url}" style="width:100%;margin-top:10px;"></audio>
+        </div>`:''}
+      </div>
+    `;
+  }).join('');
 }
 
-async function generateAssets(id){
-  const lang = document.getElementById('langPicker').value || 'English';
-  const res = await fetch('/api/calendar/generate-assets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,language:lang})});
+function onLanguageChange(){
+  currentLanguage = document.getElementById('defaultLanguage').value;
+  if(dashboard) renderDashboard();
+}
+
+async function generateAssets(itemId){
+  const res = await fetch('/api/calendar/generate-assets',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({id:itemId, language:currentLanguage})
+  });
   if(res.ok){
     const updated = await res.json();
-    await render();
-    selectCampaign(updated);
-  } else {
-    alert('Asset generation failed');
+    dashboard.calendar = dashboard.calendar.map(i => i.id===updated.id ? updated : i);
+    renderDashboard();
   }
 }
 
-async function saveKey(){
-  const key = document.getElementById('gemKey').value.trim();
-  if(!key) return alert('Enter key');
-  const res = await fetch('/api/set_api_key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key})});
+function downloadZip(itemId){
+  window.open(`/api/download_zip/${itemId}`,'_blank');
+}
+
+async function init(){
+  const res = await fetch('/api/dashboard');
   if(res.ok){
-    document.getElementById('gemKey').value='';
-    await render();
-    // auto generate first 2 assets if missing
-    const missing = (DASH.calendar||[]).filter(i=>!i.assets).slice(0,2);
-    for(const it of missing) await generateAssets(it.id);
-    alert('Key saved and assets generated (if any)');
+    dashboard = await res.json();
+    renderDashboard();
   } else {
-    alert('Failed to save key');
+    document.getElementById('dashboardContent').innerHTML = '<div class="copy-box">Could not load dashboard.</div>';
   }
 }
 
-document.getElementById('saveKeyBtn').addEventListener('click',saveKey);
-render();
+init();
 </script>
 </body>
 </html>
