@@ -1,89 +1,220 @@
 """
 generator.py
 ------------
-Uses the Gemini API (google-genai SDK) to generate South African-style
-marketing content for various use cases, audiences, and tones.
+Operator Engine powered by Gemini.
+Handles business profile diagnosis, 14-day calendar generation,
+copy asset generation, and the simulated WhatsApp operator chatbot.
 """
 
 import os
+import json
 from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 
+# ponytail: load env once here
 load_dotenv()
 
-SCENARIO_CONTEXTS = {
-    "General Hustle": "A high-energy, viral social media style (TikTok/Instagram). Use extreme hype and FOMO.",
-    "WhatsApp Status": "Short, punchy, and emoji-heavy. Perfect for quick viewing and high conversion on mobile.",
-    "Spaza/Store Sale": "Traditional local 'radio ad' style. Focus heavily on prices and immediate store visits.",
-    "Community Market": "Inviting, friendly, and warm. Focus on community spirit and high-quality local products.",
-    "NGO Announcement": "Clear, informative, and community-focused. Use a helpful and respectful but engaging tone.",
-    "Creative Agency": "Balanced, professional, and sophisticated. Focus on clear brand messaging and perfect tone."
-}
+def get_client():
+    # ponytail: helper to return configured client
+    return genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-def build_prompt(store_name: str, promo_end: str, promos: list[str], language: str, scenario: str, audience: str, tone: str) -> str:
-    promo_list = "\n".join(f"  - {p}" for p in promos)
-    context = SCENARIO_CONTEXTS.get(scenario, SCENARIO_CONTEXTS["General Hustle"])
+def generate_calendar(profile: dict, simulated_date: str) -> dict:
+    """
+    Generate a 14-day content calendar and strategic diagnosis based on an extensive business profile.
+    """
+    client = get_client()
+    campaign_type = profile.get("campaign_type", "promo")
     
-    return f"""
-You are an expert South African social media marketer and content creator.
-Your goal is to create a marketing campaign for the following settings:
-- **Campaign Type:** {scenario}
-- **Target Audience:** {audience}
-- **Tone of Voice:** {tone}
+    if campaign_type == "competition":
+        campaign_details = f"""
+        CAMPAIGN TYPE: Competition/Giveaway
+        - Prize: {profile.get('comp_prize')}
+        - Entry Rule: {profile.get('comp_rule')}
+        - Draw Date: {profile.get('comp_date')}
+        Goal: Build massive community hype and engagement in {profile.get('location')} by telling residents how to enter and counting down.
+        """
+    elif campaign_type == "branding":
+        campaign_details = f"""
+        CAMPAIGN TYPE: branding / "Be Out There" brand trust
+        - Main Message/Vibe: {profile.get('brand_vibe')}
+        - Store Slogan: {profile.get('brand_slogan')}
+        Goal: Create local brand trust and community connection in {profile.get('location')} by highlighting staff, customer testimonials, greetings, and credentials.
+        """
+    else:
+        campaign_details = f"""
+        CAMPAIGN TYPE: Sales Promotion
+        - Best Sellers: {profile.get('offering_popular')}
+        - Slow Sellers: {profile.get('offering_slow')}
+        - Average Deal Price Tier: {profile.get('price_tier')}
+        - Slowest Day: {profile.get('slow_day')}
+        - Daily Rush Hours: {profile.get('peak_hours')}
+        Goal: Drive foot traffic on slow days using targeted discount deals and combo packages.
+        """
 
-**SCENARIO CONTEXT:**
-{context}
+    prompt = f"""
+    You are the PhandaSnap Operator Engine. You are a senior marketing strategist for South African township and small businesses.
+    Based on this extensive business profile:
+    - Store Name: {profile.get('store_name')}
+    - Category: {profile.get('category')}
+    - Location / Township: {profile.get('location')}
+    - Preferred Language: {profile.get('language')}
+    {campaign_details}
+    - Marketing Channels: {", ".join(profile.get('channels', []))}
 
-**REQUIREMENTS:**
-1. The entire response must be in {language}.
-2. Use authentic South African slang and expressions that match {language}, the **{scenario}** vibe, and the **{audience}** target.
-3. Mention the store/organization name ({store_name}), all deals/info clearly, and the end date ({promo_end}).
-4. Handle currency correctly: 'R' stands for South African Rand.
-5. **TONE:** Ensure the content is strictly in a **{tone}** tone.
-6. **AUDIENCE:** Tailor the vocabulary and style to appeal specifically to **{audience}**.
+    Task:
+    1. Generate a strategic diagnosis/point-of-view (1-2 sentences) about how this business should execute this specific campaign type in {profile.get('location')}. Refer to the township name and details to make it personal.
+    2. Generate a rolling 14-day calendar starting from simulated date: {simulated_date}.
+       - Each day should have a campaign concept.
+       - If it's a competition: Daily count-down posts, rule announcements, prize highlight, winner anticipation.
+       - If it's a branding campaign: Staff spotlight, community greeting, customer quote, slogans.
+       - If it's a promo campaign: Combo pricing, slow day discounts, rainy/hot day drink bundles.
+       - Keep it extremely relevant to their township context.
 
-**OUTPUT FORMAT:**
-You must provide exactly TWO sections separated by "===VOICEOVER===":
+    You MUST return a JSON object with exactly these keys:
+    - "diagnosis": "Your 1-2 sentence strategic advice"
+    - "calendar": A list of 14 objects, each containing:
+      - "date": "YYYY-MM-DD"
+      - "day_name": "Monday", "Tuesday", etc.
+      - "trigger": "Reason for post (e.g., Prize Spotlight, Slow Day Combo, Slogan Greeting)"
+      - "concept": "Catchy campaign concept title (e.g., Saturday Platter Boost)"
+      - "channel": "Primary channel (e.g. WhatsApp Status, Facebook)"
+      - "deals": ["Promo deal or call to action (e.g. buy a kota to enter, tag a friend)"]
 
-[Section 1: The Caption/Text Component]
-Optimized for {scenario}, targeted at {audience}, with a {tone} tone.
-
-===VOICEOVER===
-
-[Section 2: The Spoken Component]
-Write the script for a voiceover or voice note. NO emojis. NO hashtags. NO stage directions.
-**CURRENCY RULE:** For the voiceover, always write out currency in the natural spoken order of {language} (e.g., in English use 'Twenty Rand', NOT 'Rand Twenty'; in Zulu use 'Amarandi angamashumi amabili').
-Just the exact, punchy words meant to be spoken out loud.
-
-Store name: {store_name}
-Valid until: {promo_end}
-Current deals/info:
-{promo_list}
-""".strip()
-
-
-def generate_script(store_name: str, promo_end: str, promos: list[str], language: str = "English", scenario: str = "General Hustle", audience: str = "General Public", tone: str = "Hype") -> tuple[str, str]:
-    """Call Gemini and return (caption, voiceover)."""
-    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-    prompt = build_prompt(store_name, promo_end, promos, language, scenario, audience, tone)
-
-    print(f"\n⚡  Generating {scenario} campaign ({tone} tone for {audience}) in {language} with Gemini...")
+    Return ONLY the raw JSON. Do not wrap in markdown or code blocks.
+    """
     
     response = client.models.generate_content(
         model="gemini-2.5-flash",
         contents=prompt,
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json"
+        )
     )
     
-    output = response.text.strip()
-    
-    # Parse the split
-    parts = output.split("===VOICEOVER===")
-    if len(parts) == 2:
-        caption = parts[0].strip()
-        voiceover = parts[1].strip()
-    else:
-        # Fallback if AI fails to format properly
-        caption = output
-        voiceover = output
+    # ponytail: parse and handle fallback in one place
+    try:
+        return json.loads(response.text.strip())
+    except Exception as e:
+        print(f"[ERROR] Failed parsing calendar: {e}. Raw: {response.text}")
+        return {
+            "diagnosis": "Keep driving sales with consistent daily promotions and localized WhatsApp statuses.",
+            "calendar": [
+                {
+                    "date": simulated_date,
+                    "day_name": "Today",
+                    "trigger": "Welcome Boost",
+                    "concept": f"Grand Launch at {profile.get('store_name')}",
+                    "channel": "WhatsApp Status",
+                    "deals": ["Special discount on popular items"]
+                }
+            ]
+        }
 
-    return caption, voiceover
+def generate_assets_for_campaign(store_name: str, concept: str, deals: list, trigger: str, language: str) -> dict:
+    """
+    Generate all copy assets (captions, scripts, translations) for a specific calendar campaign.
+    """
+    client = get_client()
+    deals_str = "\n".join(f"- {d}" for d in deals)
+    prompt = f"""
+    You are an expert South African social media marketer.
+    Create a marketing copywriting suite for this campaign:
+    - Store Name: {store_name}
+    - Concept: {concept}
+    - Trigger Reason: {trigger}
+    - Selected Language: {language}
+    - Promotional Deals:
+    {deals_str}
+
+    REQUIREMENTS:
+    1. Primary content must be in {language} and use authentic South African slang/expressions suitable for township business promotion (e.g., sharp, choma, mzansi, spaza, shisanyama, yebo).
+    2. Keep Rands formatted with 'R' (e.g. R49, R120) in all copy. Do not write out in words.
+    3. For spoken voiceover/voicenote scripts: DO NOT include emojis, hashtags, or stage directions. Make them read smoothly.
+
+    Return a JSON object with exactly these keys:
+    - "caption": A high-energy TikTok/Reels caption in {language} with emojis and hashtags.
+    - "whatsapp_text": A clean, emoji-rich WhatsApp broadcast message in {language}.
+    - "voiceover": An energetic spoken video voiceover script in {language}.
+    - "zulu_caption": The main caption translated/adapted into isiZulu.
+    - "afrikaans_caption": The main caption translated/adapted into Afrikaans.
+    - "sesotho_caption": The main caption translated/adapted into Sesotho.
+    - "english_caption": The main caption translated/adapted into English.
+    - "community_whatsapp_group": A warm, personal broadcast message for a community WhatsApp group (neighbours, regulars). Longer than the standard WhatsApp text, more conversational, uses the merchant's first name vibe. In {language}.
+    - "tiktok_script": A punchy TikTok/Reels video script with a hook (0-3s), body (3-12s), and CTA (12-15s). No emojis. Written to be spoken on camera. In {language}.
+
+    Return ONLY the raw JSON. Do not wrap in markdown or code blocks.
+    """
+    
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json"
+        )
+    )
+    
+    try:
+        return json.loads(response.text.strip())
+    except Exception as e:
+        print(f"[ERROR] Asset generation failed: {e}. Raw: {response.text}")
+        return {
+            "caption": f"Come try our {concept}! {deals_str}",
+            "whatsapp_text": f"Hey customer! Check out our {concept}: {deals_str}",
+            "voiceover": f"Get ready for the best deal in town at {store_name}!",
+            "zulu_caption": "Ikhona into entsha!",
+            "afrikaans_caption": "Kry jou spesiale aanbod vandag!",
+            "sesotho_caption": "Fumana deal ya gago kajeno!",
+            "english_caption": f"Check out our new special at {store_name}!",
+            "community_whatsapp_group": f"Hey family! 👋 Just a quick one — {store_name} is running a {concept} today. {deals_str}. Come through and show love to your local. Sharp!",
+            "tiktok_script": f"Hook: You won't believe what {store_name} is doing today. Body: We've got {concept} — {deals_str}. This is for the whole community, not just one person. CTA: Come through before it's gone. Location in bio."
+        }
+
+def chat_with_operator(profile: dict, calendar: list, history: list, message: str) -> str:
+    """
+    Chat bot agent acting as the PhandaSnap Operator on WhatsApp.
+    """
+    client = get_client()
+    
+    # ponytail: compact chat log serialization
+    history_str = ""
+    for msg in history[-10:]: # Limit context to last 10 messages
+        role = "Merchant" if msg['role'] == 'user' else "PhandaSnap AI Operator"
+        history_str += f"{role}: {msg['content']}\n"
+        
+    calendar_summary = "\n".join(
+        f"- {item['date']} ({item['day_name']}): {item['concept']} [{item.get('status', 'Pending')}]"
+        for item in calendar[:5]
+    )
+
+    prompt = f"""
+    You are the PhandaSnap AI Marketing Operator on WhatsApp. You chat with township spaza, salon, or shisanyama owners to help them run their marketing campaigns.
+    
+    BUSINESS DETAILS:
+    - Store: {profile.get('store_name')}
+    - Category: {profile.get('category')}
+    - Target: {profile.get('target_audience')}
+    - Busiest Day: {profile.get('busiest_day')}, Slowest: {profile.get('slow_day')}
+    - Best Sellers: {profile.get('offering_popular')}
+    
+    UPCOMING CALENDAR:
+    {calendar_summary}
+
+    GUIDELINES:
+    1. Be friendly, encouraging, and local. Use South African township expressions (e.g. sharp bhuti, choma, mzansi, sho, yebo, spaza, shisanyama) in moderation.
+    2. Keep responses brief (1-3 sentences maximum). Make it look like a WhatsApp message.
+    3. Help the merchant approve pending content, run promotions on slow days, or check the weather triggers.
+    4. If they say "yes" to a promo or ask to generate, tell them you've updated their calendar and created the assets!
+    
+    CHAT HISTORY:
+    {history_str}
+    
+    Merchant: {message}
+    PhandaSnap AI Operator:
+    """
+    
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
+    )
+    return response.text.strip()

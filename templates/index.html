@@ -1,391 +1,901 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PhandaSnap</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhandaSnap — Tell us about your store</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
 
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0f0f0f;
-      color: #f0f0f0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem 1rem;
-    }
+  :root{
+    --hustle-yellow:#F5B900;
+    --kasi-red:#D6342C;
+    --spaza-green:#1E7A46;
+    --taxi-blue:#1A3E8C;
+    --charcoal:#231F20;
+    --chalk:#FBF8F2;
+    --chalk-dim:#EFE9DD;
+  }
 
-    header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--chalk-dim);
+    color:var(--charcoal);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    padding:20px;
+  }
 
-    header h1 {
-      font-size: 2rem;
-      background: linear-gradient(90deg, #ff6b00, #ff0080);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+  .phone{
+    width:100%;
+    max-width:400px;
+    background:var(--chalk);
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 20px 50px rgba(35,31,32,0.25);
+    display:flex;
+    flex-direction:column;
+    min-height:680px;
+  }
 
-    header p { color: #888; margin-top: 0.4rem; font-size: 0.95rem; }
+  .topstrip{
+    background:var(--hustle-yellow);
+    color:var(--charcoal);
+    font-weight:700;
+    font-size:13px;
+    padding:10px 20px;
+    text-align:center;
+    letter-spacing:0.02em;
+  }
 
-    .card {
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      padding: 2rem;
-      width: 100%;
-      max-width: 600px;
-    }
+  .content{
+    flex:1;
+    padding:28px 24px 20px;
+    display:flex;
+    flex-direction:column;
+  }
 
-    label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 0.4rem; }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    font-weight:600;
+    color:var(--taxi-blue);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    margin-bottom:6px;
+  }
 
-    input, select {
-      width: 100%;
-      padding: 0.65rem 0.9rem;
-      background: #111;
-      border: 1px solid #333;
-      border-radius: 8px;
-      color: #f0f0f0;
-      font-size: 0.95rem;
-      margin-bottom: 1.2rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
+  h1{
+    font-family:'Archivo Black',sans-serif;
+    font-size:26px;
+    line-height:1.15;
+    margin:0 0 8px;
+    color:var(--charcoal);
+  }
 
-    input:focus, select:focus { border-color: #ff6b00; }
+  .subtext{
+    font-size:14px;
+    color:#5b5654;
+    margin:0 0 24px;
+    line-height:1.5;
+  }
 
-    .deals-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.8rem; }
+  .field{
+    margin-bottom:18px;
+  }
 
-    .deal-row { display: flex; gap: 0.5rem; }
+  .field label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:8px;
+    color:var(--charcoal);
+  }
 
-    .deal-row input { margin-bottom: 0; flex: 1; }
+  .field input[type="text"],
+  .field textarea{
+    width:100%;
+    padding:13px 14px;
+    border:2px solid var(--chalk-dim);
+    background:#fff;
+    border-radius:10px;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    color:var(--charcoal);
+    outline:none;
+    transition:border-color .15s;
+    resize:none;
+  }
+  .field input:focus,
+  .field textarea:focus{
+    border-color:var(--taxi-blue);
+  }
 
-    .btn-remove {
-      background: #2a2a2a;
-      border: 1px solid #333;
-      border-radius: 8px;
-      color: #888;
-      cursor: pointer;
-      padding: 0 0.8rem;
-      font-size: 1.1rem;
-      transition: color 0.2s;
-    }
+  .chip-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
 
-    .btn-remove:hover { color: #ff4444; }
+  .chip{
+    padding:10px 16px;
+    border-radius:999px;
+    border:2px solid var(--chalk-dim);
+    background:#fff;
+    font-size:13px;
+    font-weight:600;
+    color:var(--charcoal);
+    cursor:pointer;
+    user-select:none;
+    transition:all .15s;
+  }
+  .chip.selected{
+    background:var(--taxi-blue);
+    border-color:var(--taxi-blue);
+    color:#fff;
+  }
+  .chip.selected.day{
+    background:var(--kasi-red);
+    border-color:var(--kasi-red);
+  }
+  .chip.selected.material{
+    background:var(--spaza-green);
+    border-color:var(--spaza-green);
+  }
 
-    .btn-add {
-      background: none;
-      border: 1px dashed #444;
-      border-radius: 8px;
-      color: #888;
-      cursor: pointer;
-      padding: 0.55rem;
-      width: 100%;
-      font-size: 0.9rem;
-      margin-bottom: 1.5rem;
-      transition: border-color 0.2s, color 0.2s;
-    }
+  .spacer{flex:1;}
 
-    .btn-add:hover { border-color: #ff6b00; color: #ff6b00; }
+  .progress{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    padding:16px 0 0;
+  }
+  .dot{
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background:var(--chalk-dim);
+    transition:all .2s;
+  }
+  .dot.active{
+    background:var(--kasi-red);
+    width:22px;
+    border-radius:5px;
+  }
+  .dot.done{
+    background:var(--spaza-green);
+  }
 
-    .btn-generate {
-      width: 100%;
-      padding: 0.8rem;
-      background: linear-gradient(90deg, #ff6b00, #ff0080);
-      border: none;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
+  .footer{
+    padding:16px 24px 24px;
+    display:flex;
+    gap:10px;
+  }
 
-    .btn-generate:hover { opacity: 0.9; }
-    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+  button{
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    border:none;
+    border-radius:10px;
+    padding:15px 20px;
+    cursor:pointer;
+    transition:transform .1s, opacity .15s;
+  }
+  button:active{transform:scale(0.97);}
 
-    .error {
-      color: #ff4444;
-      font-size: 0.85rem;
-      margin-top: 0.8rem;
-      display: none;
-    }
+  .btn-primary{
+    flex:1;
+    background:var(--kasi-red);
+    color:#fff;
+  }
+  .btn-primary:disabled{
+    opacity:0.35;
+    cursor:not-allowed;
+  }
+  .btn-ghost{
+    background:transparent;
+    color:var(--charcoal);
+    padding:15px 16px;
+  }
 
-    /* Results */
-    #results {
-      width: 100%;
-      max-width: 600px;
-      margin-top: 2rem;
-      display: none;
-      flex-direction: column;
-      gap: 1.2rem;
-    }
+  .step{display:none;}
+  .step.active{display:flex; flex-direction:column; flex:1;}
 
-    .result-card {
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      padding: 1.5rem;
-    }
+  .review-row{
+    display:flex;
+    justify-content:space-between;
+    padding:12px 0;
+    border-bottom:1px solid var(--chalk-dim);
+    font-size:14px;
+  }
+  .review-row .label{color:#8a827c; font-weight:600;}
+  .review-row .val{font-weight:600; text-align:right; max-width:60%;}
 
-    .result-card h3 {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #ff6b00;
-      margin-bottom: 1rem;
-    }
+  .dashboard-header{
+    margin-bottom:18px;
+  }
+  .dashboard-summary{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .stat-card{
+    padding:14px 16px;
+    border-radius:16px;
+    background:#fff;
+    box-shadow:0 10px 22px rgba(35,31,32,0.08);
+  }
+  .stat-card .label{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:#7f7a75;
+    margin-bottom:6px;
+    font-weight:700;
+  }
+  .stat-card .value{
+    font-size:18px;
+    font-weight:700;
+    color:var(--charcoal);
+  }
+  .dashboard-calendar{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .campaign-card{
+    background:#fff;
+    border-radius:20px;
+    padding:16px;
+    box-shadow:0 12px 24px rgba(35,31,32,0.08);
+  }
+  .campaign-card .campaign-top{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    align-items:flex-start;
+    margin-bottom:10px;
+  }
+  .campaign-card .campaign-title{
+    font-weight:700;
+    font-size:15px;
+  }
+  .campaign-card .status-chip{
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    color:#fff;
+    background:var(--kasi-red);
+  }
+  .campaign-card .status-chip.Approved{background:var(--spaza-green);}
+  .campaign-card .status-chip.Completed{background:var(--taxi-blue);}
+  .campaign-copy{
+    font-size:14px;
+    line-height:1.5;
+    margin-bottom:10px;
+    color:#4a4542;
+  }
+  .campaign-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .campaign-actions button{flex:1;min-width:140px;}
+  .copy-box{
+    background:var(--chalk-dim);
+    padding:14px 16px;
+    border-radius:16px;
+    font-size:14px;
+    line-height:1.5;
+    color:#403b37;
+  }
+  .copy-box pre{
+    white-space:pre-wrap;
+    word-break:break-word;
+    margin:0;
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+  }
+  .copy-row{margin-bottom:12px;}
+  .copy-row .copy-label{font-weight:700;margin-bottom:4px;display:block;color:var(--charcoal);}
+  select{
+    width:100%;
+    padding:13px 14px;
+    border:2px solid var(--chalk-dim);
+    border-radius:10px;
+    background:#fff;
+    font-size:15px;
+    outline:none;
+  }
 
-    #caption-text {
-      white-space: pre-wrap;
-      font-size: 0.95rem;
-      line-height: 1.6;
-      color: #e0e0e0;
-    }
-
-    .copy-btn {
-      margin-top: 1rem;
-      background: #2a2a2a;
-      border: 1px solid #333;
-      border-radius: 6px;
-      color: #aaa;
-      cursor: pointer;
-      padding: 0.4rem 0.9rem;
-      font-size: 0.85rem;
-      transition: color 0.2s;
-    }
-
-    .copy-btn:hover { color: #fff; }
-
-    audio { width: 100%; margin-top: 0.5rem; }
-
-    #poster-img {
-      width: 100%;
-      border-radius: 8px;
-      margin-top: 0.5rem;
-    }
-
-    .download-link {
-      display: inline-block;
-      margin-top: 0.8rem;
-      font-size: 0.85rem;
-      color: #ff6b00;
-      text-decoration: none;
-    }
-
-    .download-link:hover { text-decoration: underline; }
-
-    .spinner {
-      display: none;
-      width: 20px; height: 20px;
-      border: 2px solid #fff3;
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin: 0 auto;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
+  .stamp-wrap{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+  }
+  .stamp{
+    font-family:'Archivo Black',sans-serif;
+    font-size:22px;
+    color:var(--spaza-green);
+    border:5px solid var(--spaza-green);
+    border-radius:10px;
+    padding:14px 26px;
+    transform:rotate(-6deg) scale(0);
+    letter-spacing:0.05em;
+    animation:stampIn .35s cubic-bezier(.2,1.4,.4,1) .2s forwards;
+  }
+  @keyframes stampIn{
+    to{ transform:rotate(-4deg) scale(1); }
+  }
+  .stamp-sub{
+    margin-top:20px;
+    font-size:14px;
+    color:#5b5654;
+    max-width:260px;
+    opacity:0;
+    animation:fadeUp .4s ease .5s forwards;
+  }
+  @keyframes fadeUp{
+    from{opacity:0; transform:translateY(8px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+</style>
 </head>
 <body>
 
-  <header>
-    <h1>⚡ PhandaSnap</h1>
-    <p>AI-powered social media toolkit for your store promos</p>
-  </header>
+<div class="phone">
+  <div class="topstrip" id="topstrip">Let's get your store set up</div>
 
-  <div class="card">
-    <label for="store_name">Store Name</label>
-    <input type="text" id="store_name" placeholder="e.g. Thandi's Chicken" />
+  <div class="content">
 
-    <label for="promo_end">Promo End Date</label>
-    <input type="text" id="promo_end" placeholder="e.g. 30 April 2025" />
+    <!-- Step 1: Business basics -->
+    <div class="step active" data-step="1">
+      <div class="eyebrow">Step 1 of 5</div>
+      <h1>What's your store called?</h1>
+      <p class="subtext">This is how we'll refer to your business across every post, poster, and message.</p>
 
-    <label for="language">Language</label>
-    <select id="language">
-      <option value="English">English</option>
-      <option value="Zulu">Zulu</option>
-      <option value="Afrikaans">Afrikaans</option>
-      <option value="Xhosa">Xhosa</option>
-      <option value="Sotho">Sotho</option>
-      <option value="Tswana">Tswana</option>
-      <option value="Pedi">Pedi (Northern Sotho)</option>
-      <option value="Venda">Venda</option>
-      <option value="Tsonga">Tsonga</option>
-      <option value="Swati">Swati</option>
-      <option value="Ndebele">Ndebele</option>
-    </select>
+      <div class="field">
+        <label>Store name</label>
+        <input type="text" id="storeName" placeholder="e.g. Thabo's Spaza">
+      </div>
 
-    <label for="scenario">Campaign Type</label>
-    <select id="scenario">
-      <option value="General Hustle">General Hustle (Viral Style)</option>
-      <option value="WhatsApp Status">WhatsApp Status (Short & Punchy)</option>
-      <option value="Spaza/Store Sale">Spaza/Store Sale (Radio Style)</option>
-      <option value="Community Market">Community Market (Friendly & Local)</option>
-      <option value="NGO Announcement">NGO Announcement (Community Focused)</option>
-      <option value="Creative Agency">Creative Agency (Professional)</option>
-    </select>
+      <div class="field">
+        <label>What kind of business is it?</label>
+        <div class="chip-grid" id="typeChips">
+          <div class="chip" data-val="Spaza shop">Spaza shop</div>
+          <div class="chip" data-val="Salon / barber">Salon / barber</div>
+          <div class="chip" data-val="Stall / vendor">Stall / vendor</div>
+          <div class="chip" data-val="Takeaway / food">Takeaway / food</div>
+          <div class="chip" data-val="Other">Other</div>
+        </div>
+        <input type="text" id="typeOther" placeholder="Describe your shop (e.g. Butchery, Mechanic, Tuck Shop)" style="display:none; margin-top:0.75rem;">
+      </div>
 
-    <div style="display: flex; gap: 1rem;">
-      <div style="flex: 1;">
-        <label for="audience">Target Audience</label>
-        <select id="audience">
-          <option value="General Public">General Public</option>
-          <option value="Youth / Gen Z">Youth / Gen Z</option>
-          <option value="Families">Families</option>
-          <option value="Professionals">Professionals</option>
-          <option value="Elders">Elders</option>
+      <div class="spacer"></div>
+    </div>
+
+    <!-- Step 2: What you sell -->
+    <div class="step" data-step="2">
+      <div class="eyebrow">Step 2 of 5</div>
+      <h1>What do you sell?</h1>
+      <p class="subtext">Pick what fits best — we'll use this to suggest posts that make sense for you.</p>
+
+      <div class="field">
+        <label>Your main products or services</label>
+        <div class="chip-grid" id="sellsChips">
+          <div class="chip" data-val="Groceries">Groceries</div>
+          <div class="chip" data-val="Airtime & data">Airtime & data</div>
+          <div class="chip" data-val="Hair & beauty">Hair & beauty</div>
+          <div class="chip" data-val="Food & drinks">Food & drinks</div>
+          <div class="chip" data-val="Clothing">Clothing</div>
+          <div class="chip" data-val="Electronics">Electronics</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Anything that's slow to sell right now? (optional)</label>
+        <input type="text" id="slowStock" placeholder="e.g. winter jackets, airtime bundles">
+      </div>
+
+      <div class="spacer"></div>
+    </div>
+
+    <!-- Step 3: Busy/slow days -->
+    <div class="step" data-step="3">
+      <div class="eyebrow">Step 3 of 5</div>
+      <h1>When's it quiet, and when's it busy?</h1>
+      <p class="subtext">We'll time your posts around your real week — a push on your slow day, not your busy one.</p>
+
+      <div class="field">
+        <label>Your slowest day</label>
+        <div class="chip-grid" id="slowDay">
+          <div class="chip day" data-val="Monday">Mon</div>
+          <div class="chip day" data-val="Tuesday">Tue</div>
+          <div class="chip day" data-val="Wednesday">Wed</div>
+          <div class="chip day" data-val="Thursday">Thu</div>
+          <div class="chip day" data-val="Friday">Fri</div>
+          <div class="chip day" data-val="Saturday">Sat</div>
+          <div class="chip day" data-val="Sunday">Sun</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Your busiest day</label>
+        <div class="chip-grid" id="busyDay">
+          <div class="chip day" data-val="Monday">Mon</div>
+          <div class="chip day" data-val="Tuesday">Tue</div>
+          <div class="chip day" data-val="Wednesday">Wed</div>
+          <div class="chip day" data-val="Thursday">Thu</div>
+          <div class="chip day" data-val="Friday">Fri</div>
+          <div class="chip day" data-val="Saturday">Sat</div>
+          <div class="chip day" data-val="Sunday">Sun</div>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+    </div>
+
+    <!-- Step 4: Deals -->
+    <div class="step" data-step="4">
+      <div class="eyebrow">Step 4 of 5</div>
+      <h1>What deals are you running?</h1>
+      <p class="subtext">Tell us about your current specials or promotions. Be specific — prices, combos, discounts. We won't make anything up.</p>
+
+      <div class="field">
+        <label>Deal 1</label>
+        <input type="text" id="deal1" placeholder="e.g. 2L Coke for R18 this weekend">
+      </div>
+
+      <div class="field">
+        <label>Deal 2 (optional)</label>
+        <input type="text" id="deal2" placeholder="e.g. Free braai pack with any R200 spend">
+      </div>
+
+      <div class="field">
+        <label>Deal 3 (optional)</label>
+        <input type="text" id="deal3" placeholder="e.g. Haircut + wash for R80 on Tuesdays">
+      </div>
+
+      <div class="spacer"></div>
+    </div>
+
+    <!-- Step 5: Campaign materials -->
+    <div class="step" data-step="5">
+      <div class="eyebrow">Step 5 of 5</div>
+      <h1>What do you want generated?</h1>
+      <p class="subtext">Pick the campaign materials you want for each deal. You can always change this later.</p>
+
+      <div class="field">
+        <div class="chip-grid" id="materialsChips">
+          <div class="chip material" data-val="Story poster">🖼 Story poster</div>
+          <div class="chip material" data-val="WhatsApp caption">💬 WhatsApp caption</div>
+          <div class="chip material" data-val="Voiceover">🔊 Voiceover</div>
+          <div class="chip material" data-val="WhatsApp voice note">🎙 Voice note</div>
+          <div class="chip material" data-val="Community WhatsApp group">👥 Community WA group</div>
+          <div class="chip material" data-val="TikTok script">🎬 TikTok script</div>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+    </div>
+
+    <!-- Step 6: Review -->
+    <div class="step" data-step="6">
+      <div class="eyebrow">Almost done</div>
+      <h1>Does this look right?</h1>
+      <div id="reviewList" style="margin-top:8px;"></div>
+      <div class="spacer"></div>
+    </div>
+
+    <!-- Step 7: Stamp -->
+    <div class="step" data-step="7">
+      <div class="stamp-wrap">
+        <div class="stamp">✓ SET UP</div>
+        <div class="stamp-sub" id="stampMsg">You're all set — we'll start building your first campaign shortly.</div>
+      </div>
+    </div>
+
+    <!-- Step 8: Dashboard -->
+    <div class="step" data-step="8">
+      <div class="dashboard-header">
+        <div class="eyebrow">Dashboard</div>
+        <h1>Your 14-day campaign calendar</h1>
+        <p class="subtext">Generate assets, pick a language, and play your campaign voiceover.</p>
+      </div>
+
+      <div class="field">
+        <label>Default language for new assets</label>
+        <select id="defaultLanguage">
+          <option value="English">English</option>
+          <option value="isiZulu">isiZulu</option>
+          <option value="Afrikaans">Afrikaans</option>
+          <option value="Sesotho">Sesotho</option>
         </select>
       </div>
-      <div style="flex: 1;">
-        <label for="tone">Tone of Voice</label>
-        <select id="tone">
-          <option value="Hype">Hype & Energetic</option>
-          <option value="Funny">Funny & Relatable</option>
-          <option value="Heartfelt">Heartfelt & Sincere</option>
-          <option value="Professional">Professional & Direct</option>
-        </select>
+
+      <div class="field" style="margin-top:10px;">
+        <label>Gemini API Key (optional)</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="geminiKey" placeholder="Paste GEMINI API key here" style="flex:1;padding:10px;border-radius:8px;border:2px solid var(--chalk-dim);" />
+          <button class="btn-primary" onclick="saveGeminiKey()">Save key</button>
+        </div>
+        <div id="geminiStatus" style="margin-top:8px;font-size:13px;color:#5b5654;"></div>
       </div>
-    </div>
-    <div class="deals-list" id="deals-list">
-      <div class="deal-row">
-        <input type="text" placeholder="e.g. 2 pieces + chips for R49" />
-        <button class="btn-remove" onclick="removeDeal(this)">×</button>
-      </div>
-    </div>
-    <button class="btn-add" onclick="addDeal()">+ Add another deal</button>
 
-    <button class="btn-generate" id="gen-btn" onclick="generate()">
-      <span id="btn-label">Generate Assets</span>
-      <div class="spinner" id="spinner"></div>
-    </button>
-
-    <p class="error" id="error-msg"></p>
-  </div>
-
-  <div id="results">
-    <div class="result-card">
-      <h3>📱 Social Media Caption</h3>
-      <div id="caption-text"></div>
-      <button class="copy-btn" onclick="copyCaption()">Copy Caption</button>
-      <br/>
-      <button class="download-link" style="background:none; border:none; padding:0; font-family:inherit; cursor:pointer;" onclick="downloadCaption()">⬇ Download Text</button>
-    </div>
-
-    <div class="result-card">
-      <h3>🔊 Voiceover</h3>
-      <audio id="audio-player" controls></audio>
-      <br/>
-      <button id="audio-download" class="download-link" style="background:none; border:none; padding:0; font-family:inherit; cursor:pointer;">⬇ Download WAV</button>
+      <div class="dashboard-summary" id="dashboardSummary"></div>
+      <div class="dashboard-calendar" id="dashboardContent"></div>
     </div>
 
   </div>
 
-  <script>
-    function addDeal() {
-      const row = document.createElement('div');
-      row.className = 'deal-row';
-      row.innerHTML = `<input type="text" placeholder="e.g. Family bucket for R199" /><button class="btn-remove" onclick="removeDeal(this)">×</button>`;
-      document.getElementById('deals-list').appendChild(row);
-    }
+  <div class="progress" id="progress"></div>
 
-    function removeDeal(btn) {
-      const list = document.getElementById('deals-list');
-      if (list.children.length > 1) btn.parentElement.remove();
-    }
+  <div class="footer" id="footer">
+    <button class="btn-ghost" id="backBtn" onclick="prevStep()">Back</button>
+    <button class="btn-primary" id="nextBtn" onclick="nextStep()">Continue</button>
+  </div>
+</div>
 
-    function copyCaption() {
-      navigator.clipboard.writeText(document.getElementById('caption-text').innerText);
-    }
+<script>
+let step = 1;
+const totalSteps = 8;
+const state = {
+  storeName:'', type:'', sells:[], slowStock:'', slowDays:[], busyDays:[],
+  deals:[], materials:[], dashboard:null, currentLanguage:'English'
+};
 
-    let currentCaption = '';
-    let currentFilename = 'phandasnap_assets';
-
-    function downloadCaption() {
-      const blob = new Blob([currentCaption], { type: 'text/plain' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${currentFilename}.txt`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    }
-
-    async function generate() {
-      const btn = document.getElementById('gen-btn');
-      const label = document.getElementById('btn-label');
-      const spinner = document.getElementById('spinner');
-      const errorMsg = document.getElementById('error-msg');
-
-      const store_name = document.getElementById('store_name').value.trim();
-      const promo_end = document.getElementById('promo_end').value.trim();
-      const language = document.getElementById('language').value;
-      const scenario = document.getElementById('scenario').value;
-      const audience = document.getElementById('audience').value;
-      const tone = document.getElementById('tone').value;
-      const promos = [...document.querySelectorAll('#deals-list input')].map(i => i.value.trim()).filter(Boolean);
-
-      errorMsg.style.display = 'none';
-
-      if (!store_name || !promo_end || promos.length === 0) {
-        errorMsg.textContent = 'Please fill in all fields and add at least one deal.';
-        errorMsg.style.display = 'block';
-        return;
+function selectChip(container, multi, keyName){
+  document.querySelectorAll(container+' .chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      if(multi){
+        chip.classList.toggle('selected');
+        const val = chip.dataset.val;
+        const idx = state[keyName].indexOf(val);
+        if(idx>-1){ state[keyName].splice(idx,1); } else { state[keyName].push(val); }
+      } else {
+        document.querySelectorAll(container+' .chip').forEach(c=>c.classList.remove('selected'));
+        chip.classList.add('selected');
+        state[keyName] = chip.dataset.val;
       }
+      updateNextEnabled();
+    });
+  });
+}
+selectChip('#typeChips', false, 'type');
+document.querySelectorAll('#typeChips .chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    const wrap = document.getElementById('typeOther');
+    wrap.style.display = chip.dataset.val === 'Other' ? 'block' : 'none';
+    if(chip.dataset.val !== 'Other') state.type = chip.dataset.val;
+  });
+});
+document.getElementById('typeOther').addEventListener('input', e=>{
+  state.type = e.target.value.trim() || 'Other';
+  updateNextEnabled();
+});
+selectChip('#sellsChips', true, 'sells');
+selectChip('#slowDay', true, 'slowDays');
+selectChip('#busyDay', true, 'busyDays');
 
-      btn.disabled = true;
-      label.style.display = 'none';
-      spinner.style.display = 'block';
-      document.getElementById('results').style.display = 'none';
-
-      try {
-        const res = await fetch('/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ store_name, promo_end, promos, language, scenario, audience, tone }),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          errorMsg.textContent = data.error || 'Something went wrong.';
-          errorMsg.style.display = 'block';
-          return;
+// Prevent selecting the same day in both slowDays and busyDays
+document.querySelectorAll('#slowDay .chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    const val = chip.dataset.val;
+    // If selected in slowDays, remove from busyDays
+    if(chip.classList.contains('selected')){
+      document.querySelectorAll('#busyDay .chip').forEach(bc=>{
+        if(bc.dataset.val === val && bc.classList.contains('selected')){
+          bc.classList.remove('selected');
+          const idx = state.busyDays.indexOf(val);
+          if(idx > -1) state.busyDays.splice(idx,1);
         }
-
-        document.getElementById('caption-text').textContent = data.caption;
-        currentCaption = data.caption;
-        currentFilename = data.filename;
-
-        const audio = document.getElementById('audio-player');
-        audio.src = data.audio_b64;
-        
-        const audioDownload = document.getElementById('audio-download');
-        audioDownload.onclick = () => {
-          const a = document.createElement('a');
-          a.href = data.audio_b64;
-          a.download = `${data.filename}.wav`;
-          a.click();
-        };
-
-        document.getElementById('results').style.display = 'flex';
-        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
-
-      } catch (e) {
-        errorMsg.textContent = 'Network error. Is the server running?';
-        errorMsg.style.display = 'block';
-      } finally {
-        btn.disabled = false;
-        label.style.display = 'inline';
-        spinner.style.display = 'none';
-      }
+      });
     }
-  </script>
+    updateNextEnabled();
+  });
+});
+document.querySelectorAll('#busyDay .chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    const val = chip.dataset.val;
+    if(chip.classList.contains('selected')){
+      document.querySelectorAll('#slowDay .chip').forEach(sc=>{
+        if(sc.dataset.val === val && sc.classList.contains('selected')){
+          sc.classList.remove('selected');
+          const idx = state.slowDays.indexOf(val);
+          if(idx > -1) state.slowDays.splice(idx,1);
+        }
+      });
+    }
+    updateNextEnabled();
+  });
+});
+selectChip('#materialsChips', true, 'materials');
+
+document.getElementById('storeName').addEventListener('input', e=>{ state.storeName = e.target.value; updateNextEnabled(); });
+document.getElementById('slowStock').addEventListener('input', e=>{ state.slowStock = e.target.value; });
+['deal1','deal2','deal3'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=>{
+    state.deals = [
+      document.getElementById('deal1').value.trim(),
+      document.getElementById('deal2').value.trim(),
+      document.getElementById('deal3').value.trim()
+    ].filter(Boolean);
+    updateNextEnabled();
+  });
+});
+
+function updateNextEnabled(){
+  const btn = document.getElementById('nextBtn');
+  let ok = true;
+  if(step===1) ok = state.storeName.trim().length>0 && !!state.type;
+  if(step===2) ok = state.sells.length>0;
+  if(step===3) ok = state.slowDays.length>0 && state.busyDays.length>0;
+  if(step===4) ok = state.deals.length>0;
+  if(step===5) ok = state.materials.length>0;
+  btn.disabled = !ok;
+}
+
+function renderProgress(){
+  const p = document.getElementById('progress');
+  p.innerHTML='';
+  for(let i=1;i<=5;i++){
+    const d = document.createElement('div');
+    d.className='dot' + (i<step?' done':'') + (i===step?' active':'');
+    p.appendChild(d);
+  }
+  p.style.display = step<=5 ? 'flex' : 'none';
+}
+
+function renderReview(){
+  const list = document.getElementById('reviewList');
+  const rows = [
+    ['Store name', state.storeName],
+    ['Type', state.type],
+    ['Sells', state.sells.join(', ')],
+    ['Slow stock', state.slowStock || '—'],
+    ['Slowest days', state.slowDays.join(', ')],
+    ['Busiest days', state.busyDays.join(', ')],
+    ['Deals', state.deals.join(' · ')],
+    ['Generate', state.materials.join(', ')]
+  ];
+  list.innerHTML = rows.map(r=>`<div class="review-row"><span class="label">${r[0]}</span><span class="val">${r[1]}</span></div>`).join('');
+}
+
+function goToStep(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
+  step = n;
+  renderProgress();
+  updateNextEnabled();
+
+  const footer = document.getElementById('footer');
+  const topstrip = document.getElementById('topstrip');
+  const backBtn = document.getElementById('backBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  backBtn.style.display = (step===1 || step===7 || step===8) ? 'none' : 'block';
+
+  if(step===6){
+    renderReview();
+    nextBtn.textContent = "Looks good — finish";
+    topstrip.textContent = "Review your details";
+    footer.style.display = 'flex';
+  } else if(step===7){
+    footer.style.display = 'none';
+    topstrip.textContent = "You're in";
+  } else if(step===8){
+    footer.style.display = 'none';
+    topstrip.textContent = "Your dashboard";
+  } else {
+    footer.style.display = 'flex';
+    nextBtn.textContent = "Continue";
+    topstrip.textContent = "Let's get your store set up";
+  }
+}
+
+async function nextStep(){
+  if(step === 6){
+    goToStep(7);
+    await submitOnboarding();
+  } else if(step < totalSteps){
+    goToStep(step+1);
+  }
+}
+
+async function submitOnboarding(){
+  const profile = {
+    store_name: state.storeName,
+    category: state.type,
+    language: 'English',
+    location: 'Soweto',
+    channels: state.sells.slice(0,2),
+    materials: state.materials,
+    offering_popular: state.deals[0] || '',
+    offering_slow: state.slowStock,
+    promo_deal: state.deals.join(', '),
+    busiest_day: state.busyDays && state.busyDays[0] ? state.busyDays[0] : '',
+    slow_day: state.slowDays && state.slowDays[0] ? state.slowDays[0] : '',
+    slow_days: state.slowDays,
+    busy_days: state.busyDays,
+    sells: state.sells,
+    campaign_type: 'promo'
+  };
+  const stampMsg = document.getElementById('stampMsg');
+  if(stampMsg) stampMsg.textContent = "Building your first campaign...";
+
+  try {
+    const res = await fetch('/api/onboard', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ profile, simulated_date: new Date().toISOString().slice(0,10) })
+    });
+    if(res.ok){
+      const data = await res.json();
+      await showDashboard(data);
+    } else {
+      const errorText = await res.text();
+      if(stampMsg) stampMsg.textContent = 'Onboarding failed. ' + errorText;
+    }
+  } catch(e) {
+    if(stampMsg) stampMsg.textContent = 'Could not reach server. Make sure the app is running.';
+  }
+}
+
+function getCaptionForLanguage(copySuite, language){
+  if(!copySuite) return '';
+  const map = {
+    English: copySuite.english_caption || copySuite.caption,
+    isiZulu: copySuite.zulu_caption || copySuite.caption,
+    Afrikaans: copySuite.afrikaans_caption || copySuite.caption,
+    Sesotho: copySuite.sesotho_caption || copySuite.caption
+  };
+  return map[language] || copySuite.caption || '';
+}
+
+function renderDashboard(){
+  const dashboard = state.dashboard || {};
+  const analytics = dashboard.analytics || {};
+  const calendar = dashboard.calendar || [];
+  const language = state.currentLanguage;
+
+  document.getElementById('dashboardSummary').innerHTML = `
+    <div class="stat-card"><div class="label">Campaigns</div><div class="value">${analytics.total_campaigns || 0}</div></div>
+    <div class="stat-card"><div class="label">Clicks</div><div class="value">${analytics.total_clicks || 0}</div></div>
+    <div class="stat-card"><div class="label">Redemptions</div><div class="value">${analytics.total_redemptions || 0}</div></div>
+    <div class="stat-card"><div class="label">Revenue</div><div class="value">R${analytics.estimated_revenue || 0}</div></div>
+  `;
+
+  const container = document.getElementById('dashboardContent');
+  if(!calendar.length){
+    container.innerHTML = '<div class="copy-box">No campaign calendar available yet.</div>';
+    return;
+  }
+
+  container.innerHTML = calendar.map(item => {
+    const copySuite = item.assets?.copy_suite || {};
+    const caption = getCaptionForLanguage(copySuite, language);
+    const hasAssets = !!item.assets;
+    const deals = item.deals?.map(d => `<li>${d}</li>`).join('') || '';
+    return `
+      <div class="campaign-card">
+        <div class="campaign-top">
+          <div>
+            <div class="campaign-title">${item.day_name} • ${item.date}</div>
+            <div class="campaign-copy">${item.trigger} — ${item.concept}</div>
+          </div>
+          <div class="status-chip ${item.status}">${item.status}</div>
+        </div>
+        <div class="campaign-copy"><strong>Channel:</strong> ${item.channel}</div>
+        <div class="campaign-copy"><strong>Deals:</strong> <ul style="margin:8px 0 0;padding-left:18px;">${deals}</ul></div>
+        <div class="campaign-actions">
+          <button class="btn-primary" onclick="generateAssets(${item.id})">${hasAssets ? 'Refresh assets' : 'Generate assets'}</button>
+          ${hasAssets ? `<button class="btn-ghost" onclick="downloadZip(${item.id})">Download ZIP</button>` : ''}
+        </div>
+        ${hasAssets ? `
+        <div class="copy-box">
+          <div class="copy-row"><span class="copy-label">Caption (${language})</span><pre>${caption}</pre></div>
+          <div class="copy-row"><span class="copy-label">WhatsApp message</span><pre>${copySuite.whatsapp_text || 'No generated WhatsApp copy yet.'}</pre></div>
+          <div class="copy-row"><span class="copy-label">Community WA group</span><pre>${copySuite.community_whatsapp_group || 'No generated group message yet.'}</pre></div>
+          <div class="copy-row"><span class="copy-label">TikTok script</span><pre>${copySuite.tiktok_script || 'No generated TikTok script yet.'}</pre></div>
+          <div class="copy-row"><span class="copy-label">Voiceover script</span><pre>${copySuite.voiceover || 'No voiceover script yet.'}</pre></div>
+          <audio controls src="${item.assets.voiceover_url}" style="width:100%;margin-top:10px;"></audio>
+        </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+async function showDashboard(data){
+  // Save dashboard state then navigate to standalone dashboard page
+  state.dashboard = data;
+  state.currentLanguage = 'English';
+  window.location.href = '/dashboard';
+  const defaultLanguage = document.getElementById('defaultLanguage');
+  if(defaultLanguage){
+    defaultLanguage.value = state.currentLanguage;
+    defaultLanguage.onchange = () => {
+      state.currentLanguage = defaultLanguage.value;
+      renderDashboard();
+    };
+  }
+  // Update gemini status if available
+  const geminiStatus = document.getElementById('geminiStatus');
+  if(geminiStatus){
+    geminiStatus.textContent = data.api_key_available ? 'Gemini API key available — using Gemini for generation.' : 'No Gemini key configured — running in Demo Mode.';
+  }
+  renderDashboard();
+}
+
+async function saveGeminiKey(){
+  const input = document.getElementById('geminiKey');
+  const status = document.getElementById('geminiStatus');
+  if(!input) return;
+  const key = input.value.trim();
+  if(!key){ if(status) status.textContent = 'Enter a key first.'; return; }
+  if(status) status.textContent = 'Saving key...';
+  try{
+    const res = await fetch('/api/set_api_key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key})});
+    if(res.ok){
+      const data = await res.json();
+      state.dashboard = data;
+      if(status) status.textContent = 'Saved — Gemini enabled.';
+      // clear input for safety
+      input.value = '';
+      renderDashboard();
+        // Auto-generate assets for up to 3 items without assets to create the audio
+        const todo = (state.dashboard.calendar || []).filter(i => !i.assets).slice(0,3);
+        for(const it of todo){
+          await generateAssets(it.id);
+        }
+    } else {
+      const txt = await res.text();
+      if(status) status.textContent = 'Failed to save: '+txt;
+    }
+  } catch(e){
+    if(status) status.textContent = 'Network error saving key.';
+  }
+}
+
+async function generateAssets(itemId){
+  const language = state.currentLanguage || 'English';
+  const res = await fetch('/api/calendar/generate-assets', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ id: itemId, language })
+  });
+  if(res.ok){
+    const updatedItem = await res.json();
+    state.dashboard.calendar = state.dashboard.calendar.map(item => item.id === updatedItem.id ? updatedItem : item);
+    renderDashboard();
+  } else {
+    console.error('Asset generation failed', await res.text());
+  }
+}
+
+function downloadZip(itemId){
+  window.open(`/api/download_zip/${itemId}`, '_blank');
+}
+
+function prevStep(){
+  if(step > 1) goToStep(step-1);
+}
+
+renderProgress();
+updateNextEnabled();
+</script>
 
 </body>
 </html>

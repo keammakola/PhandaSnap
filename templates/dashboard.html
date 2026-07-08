@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PhandaSnap Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap');
+  :root{--kasi-red:#D6342C;--spaza-green:#1E7A46;--charcoal:#231F20;--chalk-dim:#EFE9DD;--chalk:#FBF8F2}
+  body{font-family:Inter,system-ui,Arial;margin:0;background:var(--chalk-dim);color:var(--charcoal);padding:28px}
+  .wrap{max-width:980px;margin:0 auto}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  h1{margin:0;font-family:Archivo Black, sans-serif}
+  .controls{display:flex;gap:8px;align-items:center}
+  .card{background:#fff;padding:14px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.06);}
+  .grid{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:18px}
+  .calendar-list{display:flex;flex-direction:column;gap:12px}
+  .campaign-card{padding:12px;border-radius:10px;background:linear-gradient(180deg,#fff,#fbfbfb);}
+  .campaign-top{display:flex;justify-content:space-between}
+  .campaign-title{font-weight:700}
+  .actions{display:flex;gap:8px;margin-top:10px}
+  button{padding:10px 12px;border-radius:8px;border:none;cursor:pointer}
+  .btn-primary{background:var(--kasi-red);color:#fff}
+  .btn-ghost{background:transparent;border:1px solid var(--chalk-dim)}
+  .side{display:flex;flex-direction:column;gap:12px}
+  .copy-box{background:var(--chalk-dim);padding:10px;border-radius:8px}
+  select,input{padding:10px;border-radius:8px;border:2px solid var(--chalk-dim);width:100%}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>PhandaSnap Dashboard</h1>
+      <div style="color:#6b6563">14-day calendar · Generate assets & voiceovers</div>
+    </div>
+    <div class="controls">
+      <select id="langPicker"><option>English</option><option>isiZulu</option><option>Afrikaans</option><option>Sesotho</option></select>
+      <input id="gemKey" placeholder="GEMINI_API_KEY (optional)" style="min-width:260px" />
+      <button class="btn-primary" id="saveKeyBtn">Save key</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <strong>Calendar</strong>
+          <div id="summarySmall" style="color:#6b6563"></div>
+        </div>
+        <div id="calendar" class="calendar-list" style="margin-top:12px"></div>
+      </div>
+    </div>
+    <aside class="side">
+      <div class="card">
+        <strong>Selected campaign</strong>
+        <div id="selectedInfo" style="margin-top:8px;color:#6b6563">Pick a campaign to view details</div>
+      </div>
+      <div class="card">
+        <strong>Generated copy</strong>
+        <div id="copyArea" class="copy-box" style="height:240px;overflow:auto;margin-top:8px">No assets generated yet.</div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+async function fetchDashboard(){
+  const res = await fetch('/api/dashboard');
+  if(!res.ok) return null;
+  return await res.json();
+}
+
+function createCampaignNode(item){
+  const div = document.createElement('div');
+  div.className = 'campaign-card card';
+  div.innerHTML = `
+    <div class="campaign-top">
+      <div>
+        <div class="campaign-title">${item.day_name} • ${item.date}</div>
+        <div style="color:#6b6563">${item.trigger} — ${item.concept}</div>
+      </div>
+      <div style="text-align:right"><div style="font-weight:700">${item.channel}</div><div style="color:#6b6563">${item.status}</div></div>
+    </div>
+    <div style="margin-top:8px;color:#4a4542">Deals: ${item.deals.map(d=>'• '+d).join('<br>')}</div>
+    <div class="actions">
+      <button class="btn-primary" onclick="generateAssets(${item.id})">${item.assets? 'Refresh assets':'Generate assets'}</button>
+      ${/* placeholder */''}
+    </div>
+  `;
+  div.onclick = ()=> selectCampaign(item);
+  return div;
+}
+
+let DASH = null;
+let SELECTED = null;
+
+async function render(){
+  const data = await fetchDashboard();
+  DASH = data;
+  document.getElementById('langPicker').value = 'English';
+  document.getElementById('calendar').innerHTML = '';
+  if(!data || !data.calendar) { document.getElementById('calendar').innerHTML='<div class="copy-box">No calendar</div>'; return; }
+  data.calendar.forEach(it=>{
+    const node = createCampaignNode(it);
+    document.getElementById('calendar').appendChild(node);
+  });
+  document.getElementById('summarySmall').textContent = `${data.calendar.length} days · ${data.analytics.total_campaigns || 0} campaigns`;
+}
+
+function selectCampaign(item){
+  SELECTED = item;
+  document.getElementById('selectedInfo').innerHTML = `<div style="font-weight:700">${item.concept}</div><div style="color:#6b6563">${item.date} · ${item.channel} · ${item.status}</div>`;
+  if(item.assets){
+    document.getElementById('copyArea').innerHTML = `
+      <strong>Caption</strong><div style="margin:6px 0">${item.assets.copy_suite.caption||''}</div>
+      <strong>WhatsApp</strong><div style="margin:6px 0">${item.assets.copy_suite.whatsapp_text||''}</div>
+      <strong>TikTok script</strong><div style="margin:6px 0">${item.assets.copy_suite.tiktok_script||''}</div>
+      <audio controls src="${item.assets.voiceover_url}" style="width:100%"></audio>
+    `;
+  } else {
+    document.getElementById('copyArea').innerHTML = 'No assets yet — click Generate assets.';
+  }
+}
+
+async function generateAssets(id){
+  const lang = document.getElementById('langPicker').value || 'English';
+  const res = await fetch('/api/calendar/generate-assets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,language:lang})});
+  if(res.ok){
+    const updated = await res.json();
+    await render();
+    selectCampaign(updated);
+  } else {
+    alert('Asset generation failed');
+  }
+}
+
+async function saveKey(){
+  const key = document.getElementById('gemKey').value.trim();
+  if(!key) return alert('Enter key');
+  const res = await fetch('/api/set_api_key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key})});
+  if(res.ok){
+    document.getElementById('gemKey').value='';
+    await render();
+    // auto generate first 2 assets if missing
+    const missing = (DASH.calendar||[]).filter(i=>!i.assets).slice(0,2);
+    for(const it of missing) await generateAssets(it.id);
+    alert('Key saved and assets generated (if any)');
+  } else {
+    alert('Failed to save key');
+  }
+}
+
+document.getElementById('saveKeyBtn').addEventListener('click',saveKey);
+render();
+</script>
+</body>
+</html>

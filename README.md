@@ -1,81 +1,75 @@
-# ⚡ Hustle Engine
+# ⚡ PhandaSnap Operator (AI Marketing Assistant SaaS)
 
-AI-powered social media toolkit for township and small business store promotions. Enter your store name, deals, and promo end date — get a viral caption, voiceover audio, and a promotional graphic in seconds.
+PhandaSnap Operator is an AI-powered marketing assistant SaaS tailored for South African township and small business merchants (spazas, salons, shisanyamas, etc.). Instead of just generating one-off assets, it behaves like an active junior marketing hire—diagnosing business needs, running a rolling content calendar, adapting to real-world weather and payday triggers, tracking promotion outcomes, and interacting directly with the merchant via a simulated WhatsApp chat interface.
 
-## What it generates
+## Core Features
 
-- **Caption** — hype social media post with emojis and hashtags (TikTok/Reels style)
-- **Voiceover** — spoken audio file ready to drop into your video edit
-- **Poster** — eye-catching promotional graphic (requires Vertex AI setup)
-
-## Prerequisites
-
-- Python 3.10+
-- A [Gemini API key](https://aistudio.google.com/app/apikey)
-- *(Optional)* A Google Cloud project with Vertex AI enabled for poster generation
+1. **Strategic Diagnosis**: Automatically analyzes the business profile (best sellers, slow-moving items, busiest days) on onboarding to provide strategic marketing insights.
+2. **Rolling Content Calendar**: Manages a rolling 14-day campaign calendar tied to real-world triggers.
+3. **Environment & Trigger Simulation**: Allows changing simulated weather (Sunny & Hot, Rainy & Cold) or payday flags, which prompts the Operator to suggest swapping scheduled campaigns dynamically (e.g. promoting cold drinks on a hot day).
+4. **WhatsApp Assistant Chat (Simulated)**: A mock smartphone chat view allows interacting with the Operator chatbot in real-time to tweak campaigns and approve posts using local township slang (tsotsitaal/slang support).
+5. **Outcome Feedback Loop**: Log redemption and click metrics to let the AI learn and adapt future suggestions.
+6. **Multi-format Assets**: Every calendar campaign generates vertical story posters (Pillow text rendering over AI-generated backgrounds), browser-playable TTS voiceovers, WhatsApp voice notes, and caption copy in multiple languages (isiZulu, English, Afrikaans, Sesotho).
+7. **Zero-Setup Demo Mode**: Runs out-of-the-box with simulated client-side calendar generation and local chat rules if no Gemini API Key is configured.
 
 ## Setup
 
-1. **Clone the repo and install dependencies**
-
+1. **Install dependencies**:
    ```bash
-   git clone <repo-url>
-   cd "hustle engine"
    pip install -r requirements.txt
    ```
 
-2. **Configure environment variables**
-
+2. **Configure Environment Variables**:
+   Create a `.env` file from the example:
    ```bash
    cp .env.example .env
    ```
-
-   Open `.env` and fill in your values:
-
+   Add your Google Gemini API Key to `.env` (optional; falls back to Demo Mode if omitted):
    ```env
    GEMINI_API_KEY=your_gemini_api_key_here
-
-   # Optional — only needed for poster generation
-   VERTEX_PROJECT_ID=your-gcp-project-id
-   GOOGLE_APPLICATION_CREDENTIALS=path/to/service_account.json
    ```
 
-## Running the web UI
+3. **Run the SaaS Application**:
+   ```bash
+   python app.py
+   ```
+   Then open [http://localhost:8080](http://localhost:8080) in your browser.
 
-```bash
-python app.py
+4. **Deploy to Firebase**:
+   - Install the Firebase CLI if needed:
+     ```bash
+     npm install -g firebase-tools
+     ```
+   - Set your Firebase project ID in `.firebaserc`.
+   - Deploy the app to Firebase Hosting + Cloud Run:
+     ```bash
+     firebase deploy --only hosting,run
+     ```
+   - The app uses the existing `Dockerfile` and serves through Cloud Run behind Firebase Hosting.
+
+5. **Deploy to Vercel (Static Frontend Only)**:
+   - Install the Vercel CLI if needed:
+     ```bash
+     npm install -g vercel
+     ```
+   - Ensure `vercel.json` exists in the repo root.
+   - Deploy the static UI from `public/`:
+     ```bash
+     vercel --prod
+     ```
+   - Note: this deploys only the static `public/` frontend. Backend API requests to `/api/*` will not work unless `app.py` is hosted separately.
+
+## Project Structure
+
 ```
-
-Then open [http://localhost:5000](http://localhost:5000) in your browser.
-
-## Running the CLI
-
-```bash
-python main.py
-```
-
-Follow the prompts to enter your store details and deals.
-
-## Output files
-
-All generated assets are saved to the `outputs/` folder:
-
-| File | Description |
-|---|---|
-| `<store>_caption.txt` | Social media caption |
-| `<store>_voiceover.wav` | Voiceover audio |
-| `<store>_social_graphic.jpg` | Promotional poster |
-
-## Project structure
-
-```
-hustle engine/
-├── app.py          # Flask web server
-├── main.py         # CLI entry point
-├── generator.py    # Gemini caption + voiceover script generation
-├── audio.py        # Gemini TTS audio generation
-├── image.py        # Vertex AI Imagen poster generation
+PhandaSnap/
+├── app.py          # Flask Web server & persistable DB simulation (db.json)
+├── generator.py    # Operator Engine (Gemini calendar & chat reasoning)
+├── audio.py        # TTS Voice note & Voiceover generation (Gemini TTS)
+├── image.py        # Graphic poster rendering (Pillow overlay + background generator)
 ├── templates/
-│   └── index.html  # Web UI
-└── outputs/        # Generated assets (git-ignored)
+│   └── index.html  # Modern Glassmorphic SaaS Web UI (Flask-served)
+├── public/
+│   └── index.html  # Hybrid client-side Web UI (for Firebase Hosting)
+└── outputs/        # Generated campaign packs and media caches
 ```

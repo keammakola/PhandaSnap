@@ -2,7 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+.agents/
 # C extensions
 *.so
 venv/
@@ -166,3 +166,5 @@ google-cloud-sdk/
 generation_log.csv
 *.csv
 firebase-debug.log
+db.json
+outputs/

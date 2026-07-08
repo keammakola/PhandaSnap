@@ -1,0 +1,11 @@
+services:
+  phandasnap:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - ./outputs:/app/outputs
+      - ./db.json:/app/db.json
+    restart: unless-stopped

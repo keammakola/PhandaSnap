@@ -1,13 +1,23 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.swp
+*.swo
+*.DS_Store
+
+# Local env and credentials
+.env
+.env.example
+
+# Local data and generated outputs
+outputs/
+db.json
+
+# Firebase local state
+.firebase/
+firebase-debug.log
+
+# Git
 .git
 .gitignore
-__pycache__
-*.pyc
-venv
-.env
-.firebaserc
-firebase.json
-outputs
-node_modules
-README_FIREBASE.md
-Dockerfile
-.dockerignore
