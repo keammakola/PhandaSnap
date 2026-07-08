@@ -1,16 +1,19 @@
 {
   "version": 2,
   "name": "phandasnap",
-  "builds": [
-    {
-      "src": "Dockerfile",
-      "use": "@vercel/containers"
+  "functions": {
+    "api/**/*.py": {
+      "runtime": "vercel-python@0.7.1"
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "/"
+      "source": "/api/(.*)",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/public/$1"
     }
   ]
 }

@@ -21,8 +21,13 @@ load_dotenv()
 
 app = Flask(__name__)
 
-DB_FILE = "db.json"
-OUTPUT_DIR = "outputs"
+if os.environ.get("VERCEL"):
+    DB_FILE = "/tmp/db.json"
+    OUTPUT_DIR = "/tmp/outputs"
+else:
+    DB_FILE = "db.json"
+    OUTPUT_DIR = "outputs"
+
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def load_db():
