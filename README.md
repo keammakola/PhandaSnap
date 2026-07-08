@@ -47,17 +47,17 @@ PhandaSnap Operator is an AI-powered marketing assistant SaaS tailored for South
      ```
    - The app uses the existing `Dockerfile` and serves through Cloud Run behind Firebase Hosting.
 
-5. **Deploy to Vercel (Static Frontend Only)**:
+5. **Deploy to Vercel as a Container**:
    - Install the Vercel CLI if needed:
      ```bash
      npm install -g vercel
      ```
-   - Ensure `vercel.json` exists in the repo root.
-   - Deploy the static UI from `public/`:
+   - Ensure `vercel.json` exists in the repo root and the app listens on the `PORT` environment variable.
+   - Deploy the containerized app:
      ```bash
      vercel --prod
      ```
-   - Note: this deploys only the static `public/` frontend. Backend API requests to `/api/*` will not work unless `app.py` is hosted separately.
+   - This uses the existing `Dockerfile` and serves the Flask app through a Vercel container.
 
 ## Project Structure
 
@@ -71,5 +71,8 @@ PhandaSnap/
 │   └── index.html  # Modern Glassmorphic SaaS Web UI (Flask-served)
 ├── public/
 │   └── index.html  # Hybrid client-side Web UI (for Firebase Hosting)
+├── docker-compose.yml
+├── firebase.json   # Firebase Cloud Run config for container deployment
+├── vercel.json     # Vercel static deployment config
 └── outputs/        # Generated campaign packs and media caches
 ```

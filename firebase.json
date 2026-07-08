@@ -6,6 +6,22 @@
       ".firebaserc",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "phandasnap",
+          "region": "us-central1"
+        }
+      }
     ]
-  }
+  },
+  "run": [
+    {
+      "serviceId": "phandasnap",
+      "region": "us-central1",
+      "source": "."
+    }
+  ]
 }

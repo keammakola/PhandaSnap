@@ -2,9 +2,15 @@
   "version": 2,
   "name": "phandasnap",
   "builds": [
-    { "src": "public/**/*", "use": "@vercel/static" }
+    {
+      "src": "Dockerfile",
+      "use": "@vercel/containers"
+    }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "/public/$1" }
+    {
+      "src": "/(.*)",
+      "dest": "/"
+    }
   ]
 }
