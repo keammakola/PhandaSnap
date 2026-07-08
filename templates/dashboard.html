@@ -273,30 +273,37 @@ function renderResults() {
   document.getElementById('resultsHeading').textContent = profile.store_name || 'Your campaigns';
   document.getElementById('resultsSubtext').textContent = language;
 
-  const container = document.getElementById('resultsContent');
-  container.innerHTML = calendar.map(item => {
-    const cs = item.assets?.copy_suite || {};
-    const caption = getCopy(cs, language);
-    const hasAssets = !!item.assets;
+  const item = calendar[0];
+  const cs = item?.assets?.copy_suite || {};
+  const materials = dashboard.profile?.materials || [];
+  const caption = getCopy(cs, language);
 
-    const materialRows = [];
-    if (hasAssets) {
-      if (caption) materialRows.push(`<div class="copy-row"><span class="copy-label">Caption</span><div class="copy-box">${caption}</div></div>`);
-      if (cs.whatsapp_text) materialRows.push(`<div class="copy-row"><span class="copy-label">WhatsApp message</span><div class="copy-box">${cs.whatsapp_text}</div></div>`);
-      if (cs.community_whatsapp_group) materialRows.push(`<div class="copy-row"><span class="copy-label">Community WA group</span><div class="copy-box">${cs.community_whatsapp_group}</div></div>`);
-      if (cs.tiktok_script) materialRows.push(`<div class="copy-row"><span class="copy-label">TikTok script</span><div class="copy-box">${cs.tiktok_script}</div></div>`);
-      if (cs.voiceover) materialRows.push(`<div class="copy-row"><span class="copy-label">Voiceover script</span><div class="copy-box">${cs.voiceover}</div></div>`);
-      if (item.assets.voiceover_url) materialRows.push(`<audio controls src="${item.assets.voiceover_url}"></audio>`);
-    }
+  const MATERIAL_MAP = [
+    { keys: ['Story poster'],              label: 'Caption',              render: () => caption },
+    { keys: ['WhatsApp caption'],          label: 'WhatsApp message',     render: () => cs.whatsapp_text },
+    { keys: ['Community WhatsApp group'],  label: 'Community WA group',   render: () => cs.community_whatsapp_group },
+    { keys: ['TikTok script'],             label: 'TikTok script',        render: () => cs.tiktok_script },
+    { keys: ['Voiceover','WhatsApp voice note'], label: 'Voiceover script', render: () => cs.voiceover },
+  ];
 
-    return `
-      <div class="campaign-block">
-        <div class="campaign-title">${item.concept}</div>
-        <div class="campaign-meta">${item.day_name} · ${item.date} · ${item.channel}</div>
-        ${materialRows.join('') || '<div class="copy-box" style="color:#9a9490">No assets generated for this campaign.</div>'}
-      </div>
-    `;
-  }).join('');
+  const rows = MATERIAL_MAP
+    .filter(m => m.keys.some(k => materials.includes(k)))
+    .map(m => {
+      const text = m.render();
+      if (!text) return '';
+      return `<div class="copy-row"><span class="copy-label">${m.label}</span><div class="copy-box">${text}</div></div>`;
+    }).join('');
+
+  const hasAudio = materials.some(m => ['Voiceover','WhatsApp voice note'].includes(m)) && item?.assets?.voiceover_url;
+
+  document.getElementById('resultsContent').innerHTML = `
+    <div class="campaign-block">
+      <div class="campaign-title">${item?.concept || ''}</div>
+      <div class="campaign-meta">${item?.day_name} · ${item?.date} · ${item?.channel}</div>
+      ${rows || '<div class="copy-box" style="color:#9a9490">No assets generated.</div>'}
+      ${hasAudio ? `<audio controls src="${item.assets.voiceover_url}"></audio>` : ''}
+    </div>
+  `;
 }
 
 async function startGeneration() {
