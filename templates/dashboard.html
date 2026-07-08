@@ -200,7 +200,7 @@ function renderResults() {
     <div class="campaign-block">
       <div class="campaign-meta">${item?.day_name} · ${item?.date} · ${item?.channel}</div>
       ${rows || '<div class="copy-box" style="color:#9a9490">No assets generated.</div>'}
-      ${hasAudio ? `<audio controls src="${item.assets.voiceover_url}"></audio>` : ''}
+      ${hasAudio ? `<audio controls src="${item.assets.voiceover_url}"></audio><a href="${item.assets.voiceover_url}" download="voiceover.wav" style="display:block;margin-top:10px;text-align:center;padding:12px;background:var(--chalk-dim);border-radius:10px;font-weight:700;font-size:13px;color:var(--charcoal);text-decoration:none;">⬇ Download voiceover</a>` : ''}
     </div>
   `;
 
