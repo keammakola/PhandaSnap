@@ -16,8 +16,9 @@ from dotenv import load_dotenv
 import generator
 import audio
 
-# ponytail: load env on startup
-load_dotenv()
+# only load .env locally; on Vercel env vars are injected by the platform
+if not os.environ.get("VERCEL"):
+    load_dotenv()
 
 app = Flask(__name__)
 
@@ -161,41 +162,36 @@ def get_dashboard():
 
 @app.route("/api/set_api_key", methods=["POST"])
 def set_api_key():
-    """Set the GEMINI_API_KEY in the local .env and process env so generator can use Gemini.
-    This persists the key to .env and updates runtime os.environ so subsequent requests use Gemini.
-    """
+    """Set GEMINI_API_KEY in runtime env (local only; on Vercel set via dashboard)."""
     data = request.json or {}
     key = (data.get("key") or "").strip()
     if not key:
         return jsonify({"error": "No API key provided"}), 400
 
-    env_path = ".env"
-    lines = []
-    if os.path.exists(env_path):
-        try:
-            with open(env_path, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-        except Exception:
-            lines = []
-
-    replaced = False
-    for i, line in enumerate(lines):
-        if line.strip().startswith("GEMINI_API_KEY="):
-            lines[i] = f'GEMINI_API_KEY="{key}"\n'
-            replaced = True
-            break
-
-    if not replaced:
-        lines.append(f'GEMINI_API_KEY="{key}"\n')
-
-    try:
-        with open(env_path, "w", encoding="utf-8") as f:
-            f.writelines(lines)
-    except Exception as e:
-        return jsonify({"error": f"Failed to write .env: {e}"}), 500
-
-    # Update runtime env for immediate use
     os.environ["GEMINI_API_KEY"] = key
+
+    if not os.environ.get("VERCEL"):
+        env_path = ".env"
+        lines = []
+        if os.path.exists(env_path):
+            try:
+                with open(env_path, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
+            except Exception:
+                lines = []
+        replaced = False
+        for i, line in enumerate(lines):
+            if line.strip().startswith("GEMINI_API_KEY="):
+                lines[i] = f'GEMINI_API_KEY="{key}"\n'
+                replaced = True
+                break
+        if not replaced:
+            lines.append(f'GEMINI_API_KEY="{key}"\n')
+        try:
+            with open(env_path, "w", encoding="utf-8") as f:
+                f.writelines(lines)
+        except Exception as e:
+            return jsonify({"error": f"Failed to write .env: {e}"}), 500
 
     db = load_db()
     db["api_key_available"] = True
