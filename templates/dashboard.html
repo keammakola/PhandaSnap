@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PhandaSnap — Dashboard</title>
+<title>PhandaSnap — Your Campaigns</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
 
@@ -85,24 +85,31 @@
     line-height:1.5;
   }
 
-  .field{margin-bottom:18px;}
-  .field label{
-    display:block;
+  .chip-grid{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{
+    padding:10px 16px;
+    border-radius:999px;
+    border:2px solid var(--chalk-dim);
+    background:#fff;
     font-size:13px;
     font-weight:600;
-    margin-bottom:8px;
     color:var(--charcoal);
+    cursor:pointer;
+    user-select:none;
+    transition:all .15s;
+  }
+  .chip.selected{
+    background:var(--taxi-blue);
+    border-color:var(--taxi-blue);
+    color:#fff;
   }
 
-  select{
-    width:100%;
-    padding:13px 14px;
-    border:2px solid var(--chalk-dim);
-    border-radius:10px;
-    background:#fff;
-    font-family:'Inter',sans-serif;
-    font-size:15px;
-    outline:none;
+  .spacer{flex:1;}
+
+  .footer{
+    padding:16px 24px 24px;
+    display:flex;
+    gap:10px;
   }
 
   button{
@@ -116,228 +123,211 @@
     transition:transform .1s, opacity .15s;
   }
   button:active{transform:scale(0.97);}
-
-  .btn-primary{background:var(--kasi-red);color:#fff;}
+  .btn-primary{flex:1;background:var(--kasi-red);color:#fff;}
   .btn-primary:disabled{opacity:0.35;cursor:not-allowed;}
-  .btn-ghost{
-    background:transparent;
-    color:var(--charcoal);
-    border:2px solid var(--chalk-dim);
-    padding:13px 16px;
-  }
 
-  .dashboard-summary{
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:10px;
-    margin-bottom:18px;
+  /* loading */
+  .stamp-wrap{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    gap:16px;
   }
-  .stat-card{
-    padding:14px 16px;
-    border-radius:16px;
-    background:#fff;
-    box-shadow:0 10px 22px rgba(35,31,32,0.08);
+  .spinner{
+    width:40px;height:40px;
+    border:4px solid var(--chalk-dim);
+    border-top-color:var(--kasi-red);
+    border-radius:50%;
+    animation:spin .7s linear infinite;
   }
-  .stat-card .label{
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:0.08em;
-    color:#7f7a75;
-    margin-bottom:6px;
-    font-weight:700;
-  }
-  .stat-card .value{
-    font-size:18px;
-    font-weight:700;
-    color:var(--charcoal);
-  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-label{font-size:14px;color:#5b5654;}
 
-  .dashboard-calendar{display:flex;flex-direction:column;gap:14px;}
-
-  .campaign-card{
+  /* results */
+  .campaign-block{
     background:#fff;
     border-radius:20px;
-    padding:16px;
+    padding:18px;
     box-shadow:0 12px 24px rgba(35,31,32,0.08);
+    margin-bottom:16px;
   }
-  .campaign-top{
-    display:flex;
-    justify-content:space-between;
-    gap:12px;
-    align-items:flex-start;
-    margin-bottom:10px;
+  .campaign-block:last-child{margin-bottom:0;}
+  .campaign-title{
+    font-family:'Archivo Black',sans-serif;
+    font-size:15px;
+    margin:0 0 4px;
   }
-  .campaign-title{font-weight:700;font-size:15px;}
-  .status-chip{
-    padding:6px 10px;
-    border-radius:999px;
-    font-size:12px;
-    font-weight:700;
-    color:#fff;
-    background:var(--kasi-red);
-    white-space:nowrap;
-  }
-  .status-chip.Approved{background:var(--spaza-green);}
-  .status-chip.Completed{background:var(--taxi-blue);}
-
-  .campaign-copy{
-    font-size:14px;
-    line-height:1.5;
-    margin-bottom:10px;
-    color:#4a4542;
-  }
-  .campaign-actions{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
+  .campaign-meta{
+    font-size:13px;
+    color:#7f7a75;
     margin-bottom:14px;
   }
-  .campaign-actions button{flex:1;min-width:140px;}
-
+  .copy-row{margin-bottom:12px;}
+  .copy-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.07em;
+    color:var(--taxi-blue);
+    display:block;
+    margin-bottom:4px;
+  }
   .copy-box{
     background:var(--chalk-dim);
-    padding:14px 16px;
-    border-radius:16px;
-    font-size:14px;
-    line-height:1.5;
+    padding:12px 14px;
+    border-radius:12px;
+    font-size:13px;
+    line-height:1.55;
     color:#403b37;
-  }
-  .copy-box pre{
     white-space:pre-wrap;
     word-break:break-word;
-    margin:0;
-    font-family:'Inter',sans-serif;
-    font-size:13px;
   }
-  .copy-row{margin-bottom:12px;}
-  .copy-row .copy-label{font-weight:700;margin-bottom:4px;display:block;color:var(--charcoal);}
+  audio{width:100%;margin-top:10px;border-radius:8px;}
+
+  .step{display:none;}
+  .step.active{display:flex;flex-direction:column;flex:1;}
 </style>
 </head>
 <body>
 
 <div class="phone">
-  <div class="topstrip">Your dashboard</div>
+  <div class="topstrip" id="topstrip">Almost there</div>
 
   <div class="content">
-    <div class="eyebrow">Dashboard</div>
-    <h1>Your 14-day campaign calendar</h1>
-    <p class="subtext">Generate assets, pick a language, and play your campaign voiceover.</p>
 
-    <div class="field">
-      <label>Language for assets</label>
-      <select id="defaultLanguage" onchange="onLanguageChange()">
-        <option value="English">English</option>
-        <option value="isiZulu">isiZulu</option>
-        <option value="Afrikaans">Afrikaans</option>
-        <option value="Sesotho">Sesotho</option>
-      </select>
+    <!-- Step 1: Pick language -->
+    <div class="step active" data-step="1">
+      <div class="eyebrow">Last step</div>
+      <h1>What language should we generate in?</h1>
+      <p class="subtext">We'll write all your captions, WhatsApp messages, and scripts in this language.</p>
+      <div class="chip-grid" id="langChips">
+        <div class="chip selected" data-val="English">English</div>
+        <div class="chip" data-val="isiZulu">isiZulu</div>
+        <div class="chip" data-val="Afrikaans">Afrikaans</div>
+        <div class="chip" data-val="Sesotho">Sesotho</div>
+      </div>
+      <div class="spacer"></div>
     </div>
 
-    <div class="dashboard-summary" id="dashboardSummary"></div>
-    <div class="dashboard-calendar" id="dashboardContent">
-      <div class="copy-box">Loading campaigns…</div>
+    <!-- Step 2: Generating -->
+    <div class="step" data-step="2">
+      <div class="stamp-wrap">
+        <div class="spinner"></div>
+        <div class="loading-label" id="loadingLabel">Generating your campaigns…</div>
+      </div>
     </div>
+
+    <!-- Step 3: Results -->
+    <div class="step" data-step="3">
+      <div class="eyebrow">Your campaigns</div>
+      <h1 id="resultsHeading">14-day calendar</h1>
+      <p class="subtext" id="resultsSubtext"></p>
+      <div id="resultsContent"></div>
+    </div>
+
+  </div>
+
+  <div class="footer" id="footer">
+    <button class="btn-primary" id="generateBtn" onclick="startGeneration()">Generate campaigns</button>
   </div>
 </div>
 
 <script>
-let currentLanguage = 'English';
+let language = 'English';
 let dashboard = null;
 
-function getCaptionForLanguage(copySuite, language){
-  if(!copySuite) return '';
+document.querySelectorAll('#langChips .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#langChips .chip').forEach(c => c.classList.remove('selected'));
+    chip.classList.add('selected');
+    language = chip.dataset.val;
+  });
+});
+
+function goToStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
+  if (n !== 1) document.getElementById('footer').style.display = 'none';
+}
+
+function getCopy(copySuite, lang) {
+  if (!copySuite) return '';
   return {
     English: copySuite.english_caption || copySuite.caption,
     isiZulu: copySuite.zulu_caption || copySuite.caption,
     Afrikaans: copySuite.afrikaans_caption || copySuite.caption,
     Sesotho: copySuite.sesotho_caption || copySuite.caption
-  }[language] || copySuite.caption || '';
+  }[lang] || copySuite.caption || '';
 }
 
-function renderDashboard(){
-  const analytics = dashboard.analytics || {};
+function renderResults() {
   const calendar = dashboard.calendar || [];
+  const profile = dashboard.profile || {};
+  const materials = profile.materials || [];
 
-  document.getElementById('dashboardSummary').innerHTML = `
-    <div class="stat-card"><div class="label">Campaigns</div><div class="value">${analytics.total_campaigns||0}</div></div>
-    <div class="stat-card"><div class="label">Clicks</div><div class="value">${analytics.total_clicks||0}</div></div>
-    <div class="stat-card"><div class="label">Redemptions</div><div class="value">${analytics.total_redemptions||0}</div></div>
-    <div class="stat-card"><div class="label">Revenue</div><div class="value">R${analytics.estimated_revenue||0}</div></div>
-  `;
+  document.getElementById('topstrip').textContent = 'Your campaigns';
+  document.getElementById('resultsHeading').textContent = profile.store_name || 'Your campaigns';
+  document.getElementById('resultsSubtext').textContent = `${calendar.length} campaigns · ${language}`;
 
-  const container = document.getElementById('dashboardContent');
-  if(!calendar.length){
-    container.innerHTML = '<div class="copy-box">No campaign calendar available yet.</div>';
-    return;
-  }
-
+  const container = document.getElementById('resultsContent');
   container.innerHTML = calendar.map(item => {
-    const copySuite = item.assets?.copy_suite || {};
-    const caption = getCaptionForLanguage(copySuite, currentLanguage);
+    const cs = item.assets?.copy_suite || {};
+    const caption = getCopy(cs, language);
     const hasAssets = !!item.assets;
-    const deals = item.deals?.map(d=>`<li>${d}</li>`).join('') || '';
+
+    const materialRows = [];
+    if (hasAssets) {
+      if (caption) materialRows.push(`<div class="copy-row"><span class="copy-label">Caption</span><div class="copy-box">${caption}</div></div>`);
+      if (cs.whatsapp_text) materialRows.push(`<div class="copy-row"><span class="copy-label">WhatsApp message</span><div class="copy-box">${cs.whatsapp_text}</div></div>`);
+      if (cs.community_whatsapp_group) materialRows.push(`<div class="copy-row"><span class="copy-label">Community WA group</span><div class="copy-box">${cs.community_whatsapp_group}</div></div>`);
+      if (cs.tiktok_script) materialRows.push(`<div class="copy-row"><span class="copy-label">TikTok script</span><div class="copy-box">${cs.tiktok_script}</div></div>`);
+      if (cs.voiceover) materialRows.push(`<div class="copy-row"><span class="copy-label">Voiceover script</span><div class="copy-box">${cs.voiceover}</div></div>`);
+      if (item.assets.voiceover_url) materialRows.push(`<audio controls src="${item.assets.voiceover_url}"></audio>`);
+    }
+
     return `
-      <div class="campaign-card">
-        <div class="campaign-top">
-          <div>
-            <div class="campaign-title">${item.day_name} • ${item.date}</div>
-            <div class="campaign-copy">${item.trigger} — ${item.concept}</div>
-          </div>
-          <div class="status-chip ${item.status}">${item.status}</div>
-        </div>
-        <div class="campaign-copy"><strong>Channel:</strong> ${item.channel}</div>
-        <div class="campaign-copy"><strong>Deals:</strong><ul style="margin:8px 0 0;padding-left:18px;">${deals}</ul></div>
-        <div class="campaign-actions">
-          <button class="btn-primary" onclick="generateAssets(${item.id})">${hasAssets?'Refresh assets':'Generate assets'}</button>
-          ${hasAssets?`<button class="btn-ghost" onclick="downloadZip(${item.id})">Download ZIP</button>`:''}
-        </div>
-        ${hasAssets?`
-        <div class="copy-box">
-          <div class="copy-row"><span class="copy-label">Caption (${currentLanguage})</span><pre>${caption}</pre></div>
-          <div class="copy-row"><span class="copy-label">WhatsApp message</span><pre>${copySuite.whatsapp_text||''}</pre></div>
-          <div class="copy-row"><span class="copy-label">Community WA group</span><pre>${copySuite.community_whatsapp_group||''}</pre></div>
-          <div class="copy-row"><span class="copy-label">TikTok script</span><pre>${copySuite.tiktok_script||''}</pre></div>
-          <div class="copy-row"><span class="copy-label">Voiceover script</span><pre>${copySuite.voiceover||''}</pre></div>
-          <audio controls src="${item.assets.voiceover_url}" style="width:100%;margin-top:10px;"></audio>
-        </div>`:''}
+      <div class="campaign-block">
+        <div class="campaign-title">${item.concept}</div>
+        <div class="campaign-meta">${item.day_name} · ${item.date} · ${item.channel}</div>
+        ${materialRows.join('') || '<div class="copy-box" style="color:#9a9490">No assets generated for this campaign.</div>'}
       </div>
     `;
   }).join('');
 }
 
-function onLanguageChange(){
-  currentLanguage = document.getElementById('defaultLanguage').value;
-  if(dashboard) renderDashboard();
-}
+async function startGeneration() {
+  goToStep(2);
 
-async function generateAssets(itemId){
-  const res = await fetch('/api/calendar/generate-assets',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({id:itemId, language:currentLanguage})
-  });
-  if(res.ok){
-    const updated = await res.json();
-    dashboard.calendar = dashboard.calendar.map(i => i.id===updated.id ? updated : i);
-    renderDashboard();
-  }
-}
-
-function downloadZip(itemId){
-  window.open(`/api/download_zip/${itemId}`,'_blank');
-}
-
-async function init(){
   const res = await fetch('/api/dashboard');
-  if(res.ok){
-    dashboard = await res.json();
-    renderDashboard();
-  } else {
-    document.getElementById('dashboardContent').innerHTML = '<div class="copy-box">Could not load dashboard.</div>';
+  if (!res.ok) {
+    document.getElementById('loadingLabel').textContent = 'Could not load campaigns.';
+    return;
   }
-}
+  dashboard = await res.json();
+  const calendar = dashboard.calendar || [];
 
-init();
+  for (let i = 0; i < calendar.length; i++) {
+    const item = calendar[i];
+    document.getElementById('loadingLabel').textContent =
+      `Generating campaign ${i + 1} of ${calendar.length}…`;
+    const r = await fetch('/api/calendar/generate-assets', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({id: item.id, language})
+    });
+    if (r.ok) {
+      const updated = await r.json();
+      dashboard.calendar = dashboard.calendar.map(c => c.id === updated.id ? updated : c);
+    }
+  }
+
+  goToStep(3);
+  renderResults();
+}
 </script>
 </body>
 </html>
