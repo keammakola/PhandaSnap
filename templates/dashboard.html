@@ -78,53 +78,7 @@
     color:var(--charcoal);
   }
 
-  .subtext{
-    font-size:14px;
-    color:#5b5654;
-    margin:0 0 24px;
-    line-height:1.5;
-  }
-
-  .chip-grid{display:flex;flex-wrap:wrap;gap:8px;}
-  .chip{
-    padding:10px 16px;
-    border-radius:999px;
-    border:2px solid var(--chalk-dim);
-    background:#fff;
-    font-size:13px;
-    font-weight:600;
-    color:var(--charcoal);
-    cursor:pointer;
-    user-select:none;
-    transition:all .15s;
-  }
-  .chip.selected{
-    background:var(--taxi-blue);
-    border-color:var(--taxi-blue);
-    color:#fff;
-  }
-
-  .spacer{flex:1;}
-
-  .footer{
-    padding:16px 24px 24px;
-    display:flex;
-    gap:10px;
-  }
-
-  button{
-    font-family:'Inter',sans-serif;
-    font-weight:700;
-    font-size:15px;
-    border:none;
-    border-radius:10px;
-    padding:15px 20px;
-    cursor:pointer;
-    transition:transform .1s, opacity .15s;
-  }
-  button:active{transform:scale(0.97);}
-  .btn-primary{flex:1;background:var(--kasi-red);color:#fff;}
-  .btn-primary:disabled{opacity:0.35;cursor:not-allowed;}
+  .subtext{font-size:14px;color:#5b5654;margin:0 0 24px;line-height:1.5;}
 
   /* loading */
   .stamp-wrap{
@@ -155,36 +109,20 @@
     margin-bottom:16px;
   }
   .campaign-block:last-child{margin-bottom:0;}
-  .campaign-title{
-    font-family:'Archivo Black',sans-serif;
-    font-size:15px;
-    margin:0 0 4px;
-  }
-  .campaign-meta{
-    font-size:13px;
-    color:#7f7a75;
-    margin-bottom:14px;
-  }
+  .campaign-title{font-family:'Archivo Black',sans-serif;font-size:15px;margin:0 0 4px;}
+  .campaign-meta{font-size:13px;color:#7f7a75;margin-bottom:14px;}
   .copy-row{margin-bottom:12px;}
   .copy-label{
     font-family:'IBM Plex Mono',monospace;
-    font-size:11px;
-    font-weight:600;
-    text-transform:uppercase;
-    letter-spacing:0.07em;
-    color:var(--taxi-blue);
-    display:block;
-    margin-bottom:4px;
+    font-size:11px;font-weight:600;
+    text-transform:uppercase;letter-spacing:0.07em;
+    color:var(--taxi-blue);display:block;margin-bottom:4px;
   }
   .copy-box{
     background:var(--chalk-dim);
-    padding:12px 14px;
-    border-radius:12px;
-    font-size:13px;
-    line-height:1.55;
-    color:#403b37;
-    white-space:pre-wrap;
-    word-break:break-word;
+    padding:12px 14px;border-radius:12px;
+    font-size:13px;line-height:1.55;color:#403b37;
+    white-space:pre-wrap;word-break:break-word;
   }
   audio{width:100%;margin-top:10px;border-radius:8px;}
 
@@ -195,145 +133,111 @@
 <body>
 
 <div class="phone">
-  <div class="topstrip" id="topstrip">Almost there</div>
+  <div class="topstrip" id="topstrip">Building your campaign…</div>
 
   <div class="content">
 
-    <!-- Step 1: Pick language -->
+    <!-- Loading -->
     <div class="step active" data-step="1">
-      <div class="eyebrow">Last step</div>
-      <h1>What language should we generate in?</h1>
-      <p class="subtext">We'll write all your captions, WhatsApp messages, and scripts in this language.</p>
-      <div class="chip-grid" id="langChips">
-        <div class="chip selected" data-val="English">English</div>
-        <div class="chip" data-val="isiZulu">isiZulu</div>
-        <div class="chip" data-val="Afrikaans">Afrikaans</div>
-        <div class="chip" data-val="Sesotho">Sesotho</div>
-      </div>
-      <div class="spacer"></div>
-    </div>
-
-    <!-- Step 2: Generating -->
-    <div class="step" data-step="2">
       <div class="stamp-wrap">
         <div class="spinner"></div>
-        <div class="loading-label" id="loadingLabel">Generating your campaigns…</div>
+        <div class="loading-label" id="loadingLabel">Generating your campaign…</div>
       </div>
     </div>
 
-    <!-- Step 3: Results -->
-    <div class="step" data-step="3">
-      <div class="eyebrow">Your campaigns</div>
-      <h1 id="resultsHeading">14-day calendar</h1>
+    <!-- Results -->
+    <div class="step" data-step="2">
+      <div class="eyebrow">Your campaign</div>
+      <h1 id="resultsHeading"></h1>
       <p class="subtext" id="resultsSubtext"></p>
       <div id="resultsContent"></div>
     </div>
 
   </div>
-
-  <div class="footer" id="footer">
-    <button class="btn-primary" id="generateBtn" onclick="startGeneration()">Generate campaigns</button>
-  </div>
 </div>
 
 <script>
-let language = 'English';
 let dashboard = null;
 
-document.querySelectorAll('#langChips .chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    document.querySelectorAll('#langChips .chip').forEach(c => c.classList.remove('selected'));
-    chip.classList.add('selected');
-    language = chip.dataset.val;
-  });
-});
-
-function goToStep(n) {
-  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-  document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
-  if (n !== 1) document.getElementById('footer').style.display = 'none';
-}
-
-function getCopy(copySuite, lang) {
-  if (!copySuite) return '';
+function getCopy(cs, lang) {
+  if (!cs) return '';
   return {
-    English: copySuite.english_caption || copySuite.caption,
-    isiZulu: copySuite.zulu_caption || copySuite.caption,
-    Afrikaans: copySuite.afrikaans_caption || copySuite.caption,
-    Sesotho: copySuite.sesotho_caption || copySuite.caption
-  }[lang] || copySuite.caption || '';
+    English: cs.english_caption || cs.caption,
+    isiZulu: cs.zulu_caption || cs.caption,
+    Afrikaans: cs.afrikaans_caption || cs.caption,
+    Sesotho: cs.sesotho_caption || cs.caption
+  }[lang] || cs.caption || '';
 }
 
 function renderResults() {
-  const calendar = dashboard.calendar || [];
   const profile = dashboard.profile || {};
+  const language = profile.language || 'English';
   const materials = profile.materials || [];
-
-  document.getElementById('topstrip').textContent = 'Your campaigns';
-  document.getElementById('resultsHeading').textContent = profile.store_name || 'Your campaigns';
-  document.getElementById('resultsSubtext').textContent = language;
-
-  const item = calendar[0];
+  const item = (dashboard.calendar || [])[0];
   const cs = item?.assets?.copy_suite || {};
-  const materials = dashboard.profile?.materials || [];
   const caption = getCopy(cs, language);
 
+  document.getElementById('topstrip').textContent = 'Your campaign';
+  document.getElementById('resultsHeading').textContent = profile.store_name || 'Your campaign';
+  document.getElementById('resultsSubtext').textContent = `${item?.concept || ''} · ${language}`;
+
   const MATERIAL_MAP = [
-    { keys: ['Story poster'],              label: 'Caption',              render: () => caption },
-    { keys: ['WhatsApp caption'],          label: 'WhatsApp message',     render: () => cs.whatsapp_text },
-    { keys: ['Community WhatsApp group'],  label: 'Community WA group',   render: () => cs.community_whatsapp_group },
-    { keys: ['TikTok script'],             label: 'TikTok script',        render: () => cs.tiktok_script },
-    { keys: ['Voiceover','WhatsApp voice note'], label: 'Voiceover script', render: () => cs.voiceover },
+    { keys: ['Story poster'],                    label: 'Caption',          value: caption },
+    { keys: ['WhatsApp caption'],                label: 'WhatsApp message', value: cs.whatsapp_text },
+    { keys: ['Community WhatsApp group'],        label: 'Community WA group', value: cs.community_whatsapp_group },
+    { keys: ['TikTok script'],                   label: 'TikTok script',    value: cs.tiktok_script },
+    { keys: ['Voiceover', 'WhatsApp voice note'],label: 'Voiceover script', value: cs.voiceover },
   ];
 
   const rows = MATERIAL_MAP
-    .filter(m => m.keys.some(k => materials.includes(k)))
-    .map(m => {
-      const text = m.render();
-      if (!text) return '';
-      return `<div class="copy-row"><span class="copy-label">${m.label}</span><div class="copy-box">${text}</div></div>`;
-    }).join('');
+    .filter(m => m.keys.some(k => materials.includes(k)) && m.value)
+    .map(m => `<div class="copy-row"><span class="copy-label">${m.label}</span><div class="copy-box">${m.value}</div></div>`)
+    .join('');
 
   const hasAudio = materials.some(m => ['Voiceover','WhatsApp voice note'].includes(m)) && item?.assets?.voiceover_url;
 
   document.getElementById('resultsContent').innerHTML = `
     <div class="campaign-block">
-      <div class="campaign-title">${item?.concept || ''}</div>
       <div class="campaign-meta">${item?.day_name} · ${item?.date} · ${item?.channel}</div>
       ${rows || '<div class="copy-box" style="color:#9a9490">No assets generated.</div>'}
       ${hasAudio ? `<audio controls src="${item.assets.voiceover_url}"></audio>` : ''}
     </div>
   `;
+
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.querySelector('.step[data-step="2"]').classList.add('active');
 }
 
-async function startGeneration() {
-  goToStep(2);
-
+async function init() {
   const res = await fetch('/api/dashboard');
   if (!res.ok) {
     document.getElementById('loadingLabel').textContent = 'Could not load campaigns.';
     return;
   }
   dashboard = await res.json();
-  const calendar = dashboard.calendar || [];
+  const language = dashboard.profile?.language || 'English';
+  const item = (dashboard.calendar || [])[0];
 
-  const item = calendar[0];
-  if (item) {
-    document.getElementById('loadingLabel').textContent = 'Generating your campaign…';
-    const r = await fetch('/api/calendar/generate-assets', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({id: item.id, language})
-    });
-    if (r.ok) {
-      const updated = await r.json();
-      dashboard.calendar = [updated];
-    }
+  if (!item) {
+    document.getElementById('loadingLabel').textContent = 'No campaigns found.';
+    return;
   }
 
-  goToStep(3);
+  const r = await fetch('/api/calendar/generate-assets', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({id: item.id, language})
+  });
+
+  if (r.ok) {
+    const updated = await r.json();
+    dashboard.calendar[0] = updated;
+  }
+
   renderResults();
 }
+
+init();
 </script>
 </body>
 </html>

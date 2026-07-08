@@ -471,9 +471,27 @@
       <div class="spacer"></div>
     </div>
 
-    <!-- Step 5: Campaign materials -->
+    <!-- Step 5: Language -->
     <div class="step" data-step="5">
-      <div class="eyebrow">Step 5 of 5</div>
+      <div class="eyebrow">Step 5 of 6</div>
+      <h1>What language should we use?</h1>
+      <p class="subtext">We'll write all your captions, messages, and scripts in this language.</p>
+
+      <div class="field">
+        <div class="chip-grid" id="langChips">
+          <div class="chip lang selected" data-val="English">English</div>
+          <div class="chip lang" data-val="isiZulu">isiZulu</div>
+          <div class="chip lang" data-val="Afrikaans">Afrikaans</div>
+          <div class="chip lang" data-val="Sesotho">Sesotho</div>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+    </div>
+
+    <!-- Step 6: Campaign materials -->
+    <div class="step" data-step="6">
+      <div class="eyebrow">Step 6 of 6</div>
       <h1>What do you want generated?</h1>
       <p class="subtext">Pick the campaign materials you want for each deal. You can always change this later.</p>
 
@@ -491,24 +509,24 @@
       <div class="spacer"></div>
     </div>
 
-    <!-- Step 6: Review -->
-    <div class="step" data-step="6">
+    <!-- Step 7: Review -->
+    <div class="step" data-step="7">
       <div class="eyebrow">Almost done</div>
       <h1>Does this look right?</h1>
       <div id="reviewList" style="margin-top:8px;"></div>
       <div class="spacer"></div>
     </div>
 
-    <!-- Step 7: Stamp -->
-    <div class="step" data-step="7">
+    <!-- Step 8: Stamp -->
+    <div class="step" data-step="8">
       <div class="stamp-wrap">
         <div class="stamp">✓ SET UP</div>
         <div class="stamp-sub" id="stampMsg">You're all set — we'll start building your first campaign shortly.</div>
       </div>
     </div>
 
-    <!-- Step 8: Dashboard -->
-    <div class="step" data-step="8">
+    <!-- Step 9: Dashboard -->
+    <div class="step" data-step="9">
       <div class="dashboard-header">
         <div class="eyebrow">Dashboard</div>
         <h1>Your 14-day campaign calendar</h1>
@@ -550,10 +568,10 @@
 
 <script>
 let step = 1;
-const totalSteps = 8;
+const totalSteps = 9;
 const state = {
   storeName:'', type:'', sells:[], slowStock:'', slowDays:[], busyDays:[],
-  deals:[], materials:[], dashboard:null, currentLanguage:'English'
+  deals:[], language:'English', materials:[], dashboard:null, currentLanguage:'English'
 };
 
 function selectChip(container, multi, keyName){
@@ -621,6 +639,9 @@ document.querySelectorAll('#busyDay .chip').forEach(chip=>{
     updateNextEnabled();
   });
 });
+selectChip('#langChips', false, 'language');
+// pre-select English
+state.language = 'English';
 selectChip('#materialsChips', true, 'materials');
 
 document.getElementById('storeName').addEventListener('input', e=>{ state.storeName = e.target.value; updateNextEnabled(); });
@@ -643,19 +664,20 @@ function updateNextEnabled(){
   if(step===2) ok = state.sells.length>0;
   if(step===3) ok = state.slowDays.length>0 && state.busyDays.length>0;
   if(step===4) ok = state.deals.length>0;
-  if(step===5) ok = state.materials.length>0;
+  if(step===5) ok = !!state.language;
+  if(step===6) ok = state.materials.length>0;
   btn.disabled = !ok;
 }
 
 function renderProgress(){
   const p = document.getElementById('progress');
   p.innerHTML='';
-  for(let i=1;i<=5;i++){
+  for(let i=1;i<=6;i++){
     const d = document.createElement('div');
     d.className='dot' + (i<step?' done':'') + (i===step?' active':'');
     p.appendChild(d);
   }
-  p.style.display = step<=5 ? 'flex' : 'none';
+  p.style.display = step<=6 ? 'flex' : 'none';
 }
 
 function renderReview(){
@@ -668,6 +690,7 @@ function renderReview(){
     ['Slowest days', state.slowDays.join(', ')],
     ['Busiest days', state.busyDays.join(', ')],
     ['Deals', state.deals.join(' · ')],
+    ['Language', state.language],
     ['Generate', state.materials.join(', ')]
   ];
   list.innerHTML = rows.map(r=>`<div class="review-row"><span class="label">${r[0]}</span><span class="val">${r[1]}</span></div>`).join('');
@@ -685,17 +708,17 @@ function goToStep(n){
   const backBtn = document.getElementById('backBtn');
   const nextBtn = document.getElementById('nextBtn');
 
-  backBtn.style.display = (step===1 || step===7 || step===8) ? 'none' : 'block';
+  backBtn.style.display = (step===1 || step===8 || step===9) ? 'none' : 'block';
 
-  if(step===6){
+  if(step===7){
     renderReview();
     nextBtn.textContent = "Looks good — finish";
     topstrip.textContent = "Review your details";
     footer.style.display = 'flex';
-  } else if(step===7){
+  } else if(step===8){
     footer.style.display = 'none';
     topstrip.textContent = "You're in";
-  } else if(step===8){
+  } else if(step===9){
     footer.style.display = 'none';
     topstrip.textContent = "Your dashboard";
   } else {
@@ -706,8 +729,8 @@ function goToStep(n){
 }
 
 async function nextStep(){
-  if(step === 6){
-    goToStep(7);
+  if(step === 7){
+    goToStep(8);
     await submitOnboarding();
   } else if(step < totalSteps){
     goToStep(step+1);
@@ -718,7 +741,7 @@ async function submitOnboarding(){
   const profile = {
     store_name: state.storeName,
     category: state.type,
-    language: 'English',
+    language: state.language,
     location: 'Soweto',
     channels: state.sells.slice(0,2),
     materials: state.materials,
