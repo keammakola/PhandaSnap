@@ -9,3 +9,4 @@ services:
       - ./outputs:/app/outputs
       - ./db.json:/app/db.json
     restart: unless-stopped
+
